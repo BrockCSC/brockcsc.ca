@@ -10,17 +10,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-[#9A4440] text-white border-4 border-black rounded-[20px] shadow-[8px_8px_0_0_#000] text-xl font-semibold hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[7px_7px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-[4px_4px_0_0_#000]",
+          "bg-[#9A4440] text-white border-2 border-black rounded-[20px] shadow-[4px_4px_0_0_#000] text-xl font-semibold hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-[1px_1px_0_0_#000]",
         default:
-          "bg-[#9A4440] text-white border-4 border-black rounded-[20px] shadow-[8px_8px_0_0_#000] text-xl font-semibold hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[7px_7px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-[4px_4px_0_0_#000]",
+          "bg-[#9A4440] text-white border-2 border-black rounded-[20px] shadow-[4px_4px_0_0_#000] text-xl font-semibold hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-[1px_1px_0_0_#000]",
         destructive:
-          "bg-[#d44b4b] text-white border-4 border-black rounded-[20px] shadow-[8px_8px_0_0_#000] text-xl font-semibold hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[7px_7px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-[4px_4px_0_0_#000]",
+          "bg-[#d44b4b] text-white border-2 border-black rounded-[20px] shadow-[4px_4px_0_0_#000] text-xl font-semibold hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-[1px_1px_0_0_#000]",
         outline:
-          "bg-transparent text-black border-4 border-black rounded-[20px] shadow-[8px_8px_0_0_#000] text-xl font-semibold hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[7px_7px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-[4px_4px_0_0_#000]",
+          "bg-transparent text-black border-2 border-black rounded-[20px] shadow-[4px_4px_0_0_#000] text-xl font-semibold hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-[1px_1px_0_0_#000]",
         secondary:
-          "bg-[#f2f2f2] text-black border-4 border-black rounded-[20px] shadow-[8px_8px_0_0_#000] text-xl font-semibold hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[7px_7px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-[4px_4px_0_0_#000]",
+          "bg-[#f2f2f2] text-black border-2 border-black rounded-[20px] shadow-[4px_4px_0_0_#000] text-xl font-semibold hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0_0_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-[1px_1px_0_0_#000]",
         ghost:
-          "bg-transparent text-black border-4 border-black rounded-[20px] shadow-[4px_4px_0_0_#000] text-xl font-semibold hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#000]",
+          "bg-transparent text-black border-2 border-black rounded-[20px] shadow-[3px_3px_0_0_#000] text-xl font-semibold hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_0_#000] active:translate-x-[3px] active:translate-y-[3px] active:shadow-[1px_1px_0_0_#000]",
         link:
           "bg-transparent text-black border-0 shadow-none text-xl font-semibold underline underline-offset-4 hover:opacity-80",
       },
