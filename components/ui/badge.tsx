@@ -9,6 +9,8 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: "border-[#f3c5c5] bg-[#fff1f1] text-[#9a4440]",
+        cinderella: "border-black bg-cinderella text-brand-text shadow-[2px_2px_0_0_#000]",
+        neutral: "border-black bg-white text-brand-red shadow-[2px_2px_0_0_#000]",
         secondary: "border-transparent bg-slate-200 text-slate-900",
         destructive: "border-transparent bg-red-50 text-red-700",
         blue: "border-transparent bg-blue-50 text-blue-700",
@@ -19,7 +21,7 @@ const badgeVariants = cva(
       },
       size: {
         default: "",
-        sm: "px-2 text-[0.65rem]",
+        sm: "px-2 text-[0.65rem] py-0.5",
         lg: "px-3.5 py-1 text-sm",
       },
     },
