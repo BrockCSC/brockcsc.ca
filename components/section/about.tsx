@@ -24,12 +24,14 @@ export function AboutSection() {
                 icon={Users}
                 title="Meet the Team"
                 subtitle="Learn about our execs"
+                href="/team"
              />
              
              <InfoCardButton 
                 icon={FileText}
                 title="Club Charter"
                 subtitle="Read our constitution"
+                href="/about"
              />
           </div>
         </div>
