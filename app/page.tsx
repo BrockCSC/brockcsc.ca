@@ -5,9 +5,10 @@ import { AboutSection } from "@/components/section/about";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-brand-beige font-sans text-brand-text">
+    
+    <div className="min-h-screen bg-white font-sans text-brand-text">
       
-      {/* Navigation temporary for now */}
+      {/* Navigation */}
       <Navbar />
 
       <main>
