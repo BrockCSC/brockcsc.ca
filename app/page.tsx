@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/ui/navbar";
 import { HeroSection } from "@/components/section/hero";
 import { UpcomingEventsSection } from "@/components/section/upcoming-events";
 import { AboutSection } from "@/components/section/about";
