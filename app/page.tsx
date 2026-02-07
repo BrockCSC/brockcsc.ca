@@ -8,9 +8,6 @@ export default function Home() {
     
     <div className="min-h-screen bg-white font-sans text-brand-text">
       
-      {/* Navigation */}
-      <Navbar />
-
       <main>
         {/* Sections */}
         <HeroSection />

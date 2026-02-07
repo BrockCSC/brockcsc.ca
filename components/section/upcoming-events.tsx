@@ -15,11 +15,14 @@ export function UpcomingEventsSection() {
               From board games to first-person shooters, tech talks to social mixers. High contrast events for high impact learning.
            </p>
         </div>
-        <Link href="/calendar" className="text-brand-red font-bold hover:underline inline-flex items-center gap-1">
+        
+      
+        <Link href="/events" className="text-brand-red font-bold hover:underline inline-flex items-center gap-1">
            View Calendar <ArrowRight className="size-4" />
         </Link>
       </div>
 
+      {/* WILL NEED TO LINK THIS TO FIREBASE PLACE HOLDER FOR NOw */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <EventCard 
           title="Gaming Nights"

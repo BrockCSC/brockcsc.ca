@@ -1,6 +1,6 @@
-/* JOIN DISCORD BUTTON */
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight } from "lucide-react";
+import Link from "next/link"; // Import Link handling
 
 interface DiscordButtonProps {
   className?: string;
@@ -8,12 +8,20 @@ interface DiscordButtonProps {
 
 export function DiscordButton({ className }: DiscordButtonProps) {
   return (
-    <Button 
-      size="lg" 
-      variant="primary" 
-      className={className}
+    
+    <a 
+        href="https://discord.com/invite/qsctEK2"  
+        target="_blank" 
+        rel="noopener noreferrer"
+        className={className} 
     >
-      Join Discord <ArrowUpRight className="ml-2" />
-    </Button>
+        <Button 
+          size="lg" 
+          variant="primary" 
+          className="w-full sm:w-auto" 
+        >
+          Join Discord <ArrowUpRight className="ml-2" />
+        </Button>
+    </a>
   );
 }
