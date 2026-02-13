@@ -14,12 +14,32 @@ export type ExecRecord = {
 
 export type EventRecord = {
   title?: string;
+  presenter?: string;
   description?: string;
-  datetime?: {
-    timeStartTimestamp?: number;
-    timeEndTimestamp?: number;
+  location?: string;
+  signupUrl?: string;
+  googleFormUrl?: string;
+  tentative?: boolean;
+  schedule?: {
+    startDate?: string;
+    endDate?: string;
+    startTime?: string;
+    endTime?: string;
+    recurrence?: {
+      interval?: number;
+      unit?: "day" | "week" | "month";
+      byWeekday?: number[];
+    };
   };
   dscEvent?: boolean;
+  resources?: Array<{
+    name?: string;
+    url?: string;
+  }>;
+  gallery?: Array<{
+    name?: string;
+    url?: string;
+  }>;
   image?: {
     url?: string;
     name?: string;
