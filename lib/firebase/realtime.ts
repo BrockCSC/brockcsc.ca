@@ -3,13 +3,11 @@
 import {
   DataSnapshot,
   QueryConstraint,
-  endAt,
   equalTo,
   get,
   orderByChild,
   query,
   ref,
-  startAt,
 } from 'firebase/database';
 
 import { getFirebaseClient } from './client';
@@ -20,6 +18,7 @@ import type {
   FoodRecord,
   WithKey,
 } from './types';
+import { getEventStartTimestamp, getEventTiming } from '@/lib/events/schedule';
 
 const mapList = <T extends Record<string, unknown>>(
   snapshot: DataSnapshot
@@ -49,7 +48,22 @@ const fetchList = async <T extends Record<string, unknown>>(
   return options.reverse ? [...list].reverse() : list;
 };
 
-const startOfToday = (): number => new Date().setHours(0, 0, 0, 0);
+const fetchOne = async <T extends Record<string, unknown>>(
+  path: string,
+  key: string
+): Promise<WithKey<T> | null> => {
+  const { database } = getFirebaseClient();
+  const snapshot = await get(ref(database, `${path}/${key}`));
+
+  if (!snapshot.exists()) {
+    return null;
+  }
+
+  return {
+    $key: key,
+    ...(snapshot.val() as T),
+  };
+};
 
 export const fetchAllExecs = async (): Promise<WithKey<ExecRecord>[]> =>
   fetchList<ExecRecord>(
@@ -71,24 +85,44 @@ export const fetchPreviousExecs = async (): Promise<WithKey<ExecRecord>[]> =>
   ]);
 
 export const fetchAllEvents = async (): Promise<WithKey<EventRecord>[]> =>
-  fetchList<EventRecord>(
-    '/event',
-    [orderByChild('datetime/timeStartTimestamp')],
-    { reverse: true }
-  );
+  fetchList<EventRecord>('/event');
 
-export const fetchFutureEvents = async (): Promise<WithKey<EventRecord>[]> =>
-  fetchList<EventRecord>('/event', [
-    orderByChild('datetime/timeStartTimestamp'),
-    startAt(startOfToday()),
-  ]);
+export const fetchFutureEvents = async (): Promise<WithKey<EventRecord>[]> => {
+  const now = Date.now();
+  const events = await fetchAllEvents();
 
-export const fetchPastEvents = async (): Promise<WithKey<EventRecord>[]> =>
-  fetchList<EventRecord>(
-    '/event',
-    [orderByChild('datetime/timeStartTimestamp'), endAt(startOfToday())],
-    { reverse: true }
-  );
+  return events.filter((event) => {
+    const timing = getEventTiming(event, now);
+    if (timing.isOngoing) {
+      return false;
+    }
+    if (timing.isRecurring) {
+      return timing.nextStartTimestamp !== null;
+    }
+
+    const startTimestamp = getEventStartTimestamp(event);
+    return typeof startTimestamp === 'number' && startTimestamp >= now;
+  });
+};
+
+export const fetchPastEvents = async (): Promise<WithKey<EventRecord>[]> => {
+  const now = Date.now();
+  const events = await fetchAllEvents();
+
+  return events.filter((event) => {
+    const timing = getEventTiming(event, now);
+    if (timing.isRecurring || timing.isOngoing) {
+      return false;
+    }
+
+    const startTimestamp = getEventStartTimestamp(event);
+    return typeof startTimestamp === 'number' && startTimestamp < now;
+  });
+};
+
+export const fetchEventById = async (
+  eventId: string
+): Promise<WithKey<EventRecord> | null> => fetchOne<EventRecord>('/event', eventId);
 
 export const fetchAllDscCards = async (): Promise<WithKey<DscCardRecord>[]> =>
   fetchList<DscCardRecord>('/dsc');
