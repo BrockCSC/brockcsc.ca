@@ -2,7 +2,6 @@
 
 import { getFirebaseClient } from "@/lib/firebase";
 import {
-  getRedirectResult,
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithRedirect,
