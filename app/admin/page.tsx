@@ -4,7 +4,7 @@ import { getFirebaseClient } from "@/lib/firebase";
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
-  signInWithRedirect,
+  signInWithPopup,
 } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -19,7 +19,7 @@ export default function AdminPage() {
         if (!user) {
             try {
                 const provider = new GoogleAuthProvider();
-                await signInWithRedirect(auth, provider);
+                await signInWithPopup(auth, provider);
             } catch (error) {
             console.error("Login failed:", error);
             router.push("/"); // if login fails
@@ -30,7 +30,7 @@ export default function AdminPage() {
     });
 
     return () => unsubscribe();
-  }, [auth]);
+  }, [auth, router]);
 
   if (loading) {
     return <p>Authenticating...</p>;
