@@ -1,4 +1,4 @@
-import { JSX } from "react";
+import type { JSX } from "react";
 
 type CalloutType = "warning" | "error" | "success" | "info";
 
@@ -66,7 +66,7 @@ export default function Callout({
 
 function warningIcon(){
 
-    let size = 25
+    const size = 25
 
     return (
         <svg width={`${size}px`} height={`${size}px`} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="none" className="stroke-yellow-600">
@@ -78,7 +78,7 @@ function warningIcon(){
 
 function infoIcon(){
   
-  let size = 25
+  const size = 25
 
   return (
       <svg width={`${size}px`} height={`${size}px`} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="none" className="stroke-blue-600">
@@ -90,7 +90,7 @@ function infoIcon(){
 
 function errorIcon(){
   
-  let size = 25
+  const size = 25
 
   return(
     <svg width={`${size}px`} height={`${size}px`} viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" className="stroke-red-600">
@@ -107,7 +107,7 @@ function errorIcon(){
 
 function successIcon(){
   
-  let size = 25
+  const size = 25
 
   return(
     <svg width={`${size}px`} height={`${size}px`} viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" className="stroke-green-600">
