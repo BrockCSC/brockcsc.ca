@@ -1,11 +1,3 @@
-import React from "react";
-
-interface Data {
-  title: string;
-  secondary: string;
-  image: string;
-}
-
 export default function Card({ children }: { children: React.ReactNode }) {
   return (
     <div className="w-full max-w-sm mx-auto">
