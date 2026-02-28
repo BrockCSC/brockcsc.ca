@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { PhotoFrame } from "@/components/ui/photo-frame";
 import { MemberBadge } from "@/components/ui/member-badge";
 import { DiscordButton } from "@/components/ui/discord-button";
-import { ArrowUpRight } from "lucide-react";
 
 export function HeroSection() {
   return (

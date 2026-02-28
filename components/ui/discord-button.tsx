@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight } from "lucide-react";
-import Link from "next/link"; // Import Link handling
 
 interface DiscordButtonProps {
   className?: string;
