@@ -30,7 +30,10 @@ export function Navbar() {
 
         <div className="hidden items-center gap-8 text-[15px] font-bold text-[#1a1a1a] md:flex">
           {navLinks.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname === link.href || pathname.startsWith(`${link.href}/`);
 
             return (
               <Link
@@ -89,7 +92,10 @@ export function Navbar() {
       >
         <div className="mx-auto flex w-full max-w-[1060px] flex-col gap-1 px-5 py-4">
           {navLinks.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname === link.href || pathname.startsWith(`${link.href}/`);
 
             return (
               <Link
