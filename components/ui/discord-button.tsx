@@ -12,12 +12,12 @@ export function DiscordButton({ className }: DiscordButtonProps) {
         href="https://discord.com/invite/qsctEK2"  
         target="_blank" 
         rel="noopener noreferrer"
-        className={className} 
+        className={`cursor-pointer ${className ?? ""}`} 
     >
         <Button 
           size="lg" 
           variant="primary" 
-          className="w-full sm:w-auto" 
+          className="w-full cursor-pointer sm:w-auto" 
         >
           Join Discord <ArrowUpRight className="ml-2" />
         </Button>
