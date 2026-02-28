@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DiscordButtonProps {
   className?: string;
@@ -7,20 +8,19 @@ interface DiscordButtonProps {
 
 export function DiscordButton({ className }: DiscordButtonProps) {
   return (
-    
-    <a 
-        href="https://discord.com/invite/qsctEK2"  
-        target="_blank" 
-        rel="noopener noreferrer"
-        className={className} 
+    <Button
+      asChild
+      size="lg"
+      variant="primary"
+      className={cn("w-full cursor-pointer sm:w-auto", className)}
     >
-        <Button 
-          size="lg" 
-          variant="primary" 
-          className="w-full sm:w-auto" 
-        >
-          Join Discord <ArrowUpRight className="ml-2" />
-        </Button>
-    </a>
+      <a
+        href="https://discord.com/invite/qsctEK2"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Join Discord <ArrowUpRight className="ml-2" />
+      </a>
+    </Button>
   );
 }
