@@ -17,8 +17,8 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="w-full h-20 bg-white border-b-2 border-black">
-        <div className="max-w-7xl mx-auto px-8 h-full flex items-center justify-between">
+    <nav className="h-20 w-full border-b-2 border-black bg-white">
+        <div className="mx-auto flex h-full w-full max-w-[1060px] items-center justify-between px-5">
             <Link href="/" className="flex items-center gap-3 cursor-pointer">
               <Logo />
               <span className="font-bold text-[#9A4C46] text-[22px] tracking-wide">
