@@ -158,3 +158,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .section-lead {
+    @apply border-l-4 border-foreground pl-3.5 text-muted-foreground;
+  }
+
+  .brand-shadow-lg {
+    box-shadow: 4px 4px 0 var(--primary);
+  }
+
+  .detail-info-card {
+    @apply rounded-[14px] border-2 border-foreground bg-card p-3;
+    box-shadow: 4px 4px 0 var(--primary);
+  }
+}
