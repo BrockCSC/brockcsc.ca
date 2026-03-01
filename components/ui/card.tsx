@@ -8,9 +8,6 @@ export default function Card({ children }: { children: React.ReactNode }) {
           border-3 border-black
           shadow-[4px_4px_0px_var(--color-primary)]
           overflow-hidden
-          transition-transform duration-300
-          hover:scale-105
-          cursor-pointer
         "
       >
         {/* Content Section */}
