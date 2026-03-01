@@ -1,6 +1,7 @@
 export type WithKey<T> = T & { $key: string };
 
 export type ExecSocialLinks = {
+  github?: string;
   linkedin?: string;
   instagram?: string;
   x?: string;
@@ -12,12 +13,6 @@ export type ExecRecord = {
   description?: string;
   isCurrentExec?: boolean;
   socials?: ExecSocialLinks;
-  linkedin?: string;
-  linkedinUrl?: string;
-  instagram?: string;
-  instagramUrl?: string;
-  x?: string;
-  xUrl?: string;
   image?: {
     url?: string;
     name?: string;
