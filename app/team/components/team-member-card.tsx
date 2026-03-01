@@ -13,7 +13,7 @@ type TeamMemberCardProps = {
 };
 
 type SocialLink = {
-  platform: "linkedin" | "instagram" | "x";
+  platform: "github" | "linkedin" | "instagram" | "x";
   url: string;
 };
 
@@ -23,6 +23,7 @@ type DescriptionToggleProps = {
   trigger: React.ReactNode;
 };
 const SOCIAL_ICON_SRC: Record<SocialLink["platform"], string> = {
+  github: "/icons/github.svg",
   linkedin: "/icons/linkedin.svg",
   instagram: "/icons/instagram.svg",
   x: "/icons/x.svg",
@@ -108,9 +109,10 @@ const normalizeSocialUrl = (rawValue?: string): string | null => {
 const getExecSocialLinks = (member: WithKey<ExecRecord>): SocialLink[] => {
   const socials = member.socials;
   const candidates: Array<[SocialLink["platform"], string | undefined]> = [
-    ["linkedin", socials?.linkedin ?? member.linkedin ?? member.linkedinUrl],
-    ["instagram", socials?.instagram ?? member.instagram ?? member.instagramUrl],
-    ["x", socials?.x ?? member.x ?? member.xUrl],
+    ["github", socials?.github],
+    ["linkedin", socials?.linkedin],
+    ["instagram", socials?.instagram],
+    ["x", socials?.x],
   ];
 
   return candidates.reduce<SocialLink[]>((links, [platform, rawUrl]) => {
