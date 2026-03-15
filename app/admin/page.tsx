@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import Card from "@/components/ui/card";
-import { UpcomingEventsSection } from "@/components/sections/upcoming-events";
 import Link from "next/link";
 
 export default function AdminPage() {

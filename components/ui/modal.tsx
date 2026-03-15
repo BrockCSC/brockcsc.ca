@@ -1,6 +1,3 @@
-import { useState } from "react";
-import { Button } from "./button";
-
 export default function Modal({ open, onClose, title, children }: {
   open: boolean;
   onClose: () => void;
