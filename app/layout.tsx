@@ -34,9 +34,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased`}
       >
-        <div className="min-h-screen bg-background text-[#1b1d1f]">
+        <div className="flex-1 bg-background text-[#1b1d1f]">
           <Navbar />
           <div className="mx-auto w-full max-w-[1060px] px-5">
             <OrderProvider>{children}</OrderProvider>
