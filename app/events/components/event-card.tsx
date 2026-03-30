@@ -67,10 +67,12 @@ export function EventCard({
   event,
   variant,
   nowTimestamp,
+  displayButton = true,
 }: {
   event: EventItem;
   variant: EventVariant;
   nowTimestamp?: number;
+  displayButton?: boolean;
 }) {
   const hasImage = Boolean(event.image?.url);
   const imageSrc = event.image?.url || EMPTY_IMAGE;
@@ -222,7 +224,7 @@ export function EventCard({
               </Badge>
             </div>
 
-            <div
+            {displayButton && <div
               className={
                 variant === "upcoming"
                   ? "mt-2.5"
@@ -236,7 +238,7 @@ export function EventCard({
                   {variant === "ongoing" ? "Happening Now" : "Learn More"}
                 </Link>
               </Button>
-            </div>
+            </div>}
           </div>
         )}
       </div>

@@ -42,7 +42,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return <div className="py-32 text-center text-lg font-bold">Authenticating...</div>;
   }
 
-
   // Admin layout with navigation tabs and content area
   return (
     <div className="pt-8">
