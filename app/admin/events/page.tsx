@@ -14,7 +14,7 @@ export default function EventsManagementPage() {
 	const [showPastEvents, setShowPastEvents] = useState(false);
 
 	const [events, setEvents] = useState<EventItem[]>([]);
-	const [nowTimestamp, setNowTimestamp] = useState(() => Date.now());
+	const nowTimestamp = Date.now();
 
 	useEffect(() => {
 	let active = true;
