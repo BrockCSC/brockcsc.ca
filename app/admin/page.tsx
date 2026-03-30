@@ -2,9 +2,58 @@
 
 import { Button } from "@/components/ui/button";
 import Card from "@/components/ui/card";
+import { EventCard } from "../events/components/event-card";
+import { EventRecord, fetchFutureEvents, WithKey } from "@/lib/firebase";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function AdminPage() {
+
+  type EventItem = WithKey<EventRecord>;
+    
+    const [showModal, setShowModal] = useState(false);
+    const [showPastEvents, setShowPastEvents] = useState(false);
+
+    const [futureEvents, setFutureEvents] = useState<EventItem[]>([]);
+    const [nowTimestamp, setNowTimestamp] = useState(() => Date.now());
+
+    useEffect(() => {
+    let active = true;
+
+    const load = async () => {
+        try {
+        const futureEventsRaw = await fetchFutureEvents();
+        if (!active) {
+          return;
+        }
+        setFutureEvents(futureEventsRaw);
+        } catch {
+        if (!active) {
+          return;
+        }
+        console.error("Error loading events:");
+        }
+      };
+      
+      void load();
+        return () => {
+        active = false;
+      };
+  }, []);
+
+  const adaptEventForDisplay = (event: EventItem) => ({
+		title: event.title,
+		date: event.schedule?.startDate,
+		time: event.schedule?.startTime,
+		location: event.location?.split(",")[0],  
+    description: event.description,
+    image: event.image,
+	});
+
+  const events = futureEvents.map(adaptEventForDisplay);
+
+  console.log(events)
+
   return (
     <div>
         <div className="mb-8">
@@ -33,7 +82,21 @@ export default function AdminPage() {
       <div>
         <h1 className="text-3xl font-bold mb-2">Upcoming Events</h1>
         <p className="text-neutral-500 mb-6">Click to edit an event</p>
-        {/* Add an easily editable upcoming/recurring events section here. */}
+        {events.length === 0 ? (
+          <div className="text-center text-neutral-500 py-20">No upcoming events found.</div>
+        ) : (
+          <div className="grid gap-6">
+            {futureEvents.map((event, index) => (
+               <EventCard
+                event={event}
+                key={event.$key}
+                nowTimestamp={nowTimestamp}
+                variant="upcoming"
+                displayButton={false}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

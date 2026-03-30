@@ -2,27 +2,70 @@
 
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import Modal from "@/components/ui/modal";
-import { useState } from "react";
+import EventModal from "./eventsModel";
+import { useEffect, useMemo, useState } from "react";
+import { EventRecord, fetchAllEvents, WithKey } from "@/lib/firebase";
+import { classifyEventsByTiming } from "@/lib/events/classify";
 
 export default function EventsManagementPage() {
+	type EventItem = WithKey<EventRecord>;
+	
 	const [showModal, setShowModal] = useState(false);
 	const [showPastEvents, setShowPastEvents] = useState(false);
-	// Dummy event data
-	const upcomingEvents = [
-		{ title: "Algorithm Workshop", date: "Oct 24, 2023", time: "5:00 PM", location: "ST 102", status: "Upcoming", type: "Upcoming" },
-		{ title: "Gaming Night", date: "Oct 28, 2023", time: "7:00 PM", location: "Union Hall", status: "Draft", type: "Upcoming" },
-		{ title: "Career Fair prep", date: "Nov 05, 2023", time: "10:00 AM", location: "Computer Lab 3", status: "Confirmed", type: "Upcoming" },
-	];
-	const recurringEvents = [
-		{ title: "Weekly Coding Session", date: "Every Friday", time: "4:00 PM", location: "ST 105", status: "Active", type: "Recurring" },
-		{ title: "Monthly Meetup", date: "First Monday", time: "6:00 PM", location: "Room 200", status: "Active", type: "Recurring" },
-	];
-	const pastEvents = [
-		{ title: "Welcome Day 2022", date: "Sep 05, 2022", time: "1:00 PM", location: "Field", status: "Completed", type: "Past" },
-		{ title: "Spring Hackathon", date: "Mar 12, 2023", time: "9:00 AM", location: "Gym", status: "Completed", type: "Past" },
-	];
 
+	const [events, setEvents] = useState<EventItem[]>([]);
+	const [nowTimestamp, setNowTimestamp] = useState(() => Date.now());
+
+	useEffect(() => {
+	let active = true;
+
+	const load = async () => {
+			try {
+			const allEvents = await fetchAllEvents();
+			if (!active) {
+				return;
+			}
+			setEvents(allEvents);
+			} catch {
+			if (!active) {
+				return;
+			}
+			console.error("Error loading events:");
+			}
+		};
+		
+		void load();
+			return () => {
+			active = false;
+		};
+	}, []);
+
+	const { upcoming, recurring, past } = useMemo(
+		() => {
+				let ongoing, upcoming, past;
+				({ ongoing, upcoming, past } = classifyEventsByTiming(events, nowTimestamp));
+
+				upcoming = upcoming.concat(ongoing);
+				let recurring = upcoming.filter(event => event.schedule?.recurrence);
+				upcoming = upcoming.filter(event => !event.schedule?.recurrence);
+			
+
+			return { upcoming, recurring, past };
+		},
+		[events, nowTimestamp]
+	);
+
+	const adaptEventForDisplay = (event: EventItem) => ({
+		title: event.title,
+		date: event.schedule?.startDate,
+		time: event.schedule?.startTime,
+		location: event.location?.split(",")[0],
+	});
+
+	const upcomingEvents = upcoming.map((event) => adaptEventForDisplay(event));
+	const recurringEvents = recurring.map((event) => adaptEventForDisplay(event));
+	const pastEvents = past.map((event) => adaptEventForDisplay(event));
+	
 	return (
 		<div>
 			<h1 className="text-2xl font-bold mb-2">Events Management</h1>
@@ -41,7 +84,6 @@ export default function EventsManagementPage() {
 							<TableHead>Date</TableHead>
 							<TableHead>Time</TableHead>
 							<TableHead>Location</TableHead>
-							<TableHead>Status</TableHead>
 							<TableHead>Actions</TableHead>
 						</TableRow>
 					</TableHeader>
@@ -52,15 +94,6 @@ export default function EventsManagementPage() {
 								<TableCell>{event.date}</TableCell>
 								<TableCell>{event.time}</TableCell>
 								<TableCell>{event.location}</TableCell>
-								<TableCell>
-									<span className={`px-2 py-1 rounded text-xs font-semibold ${
-										event.status === "Upcoming" ? "bg-blue-100 text-blue-700" :
-										event.status === "Draft" ? "bg-neutral-200 text-neutral-700" :
-										"bg-green-100 text-green-700"
-									}`}>
-										{event.status}
-									</span>
-								</TableCell>
 								<TableCell>
 									<Button variant="link" size="sm">EDIT</Button>
 								</TableCell>
@@ -79,7 +112,6 @@ export default function EventsManagementPage() {
 							<TableHead>Date</TableHead>
 							<TableHead>Time</TableHead>
 							<TableHead>Location</TableHead>
-							<TableHead>Status</TableHead>
 							<TableHead>Actions</TableHead>
 						</TableRow>
 					</TableHeader>
@@ -90,11 +122,6 @@ export default function EventsManagementPage() {
 								<TableCell>{event.date}</TableCell>
 								<TableCell>{event.time}</TableCell>
 								<TableCell>{event.location}</TableCell>
-								<TableCell>
-									<span className="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-700">
-										{event.status}
-									</span>
-								</TableCell>
 								<TableCell>
 									<Button variant="link" size="sm">EDIT</Button>
 								</TableCell>
@@ -120,7 +147,6 @@ export default function EventsManagementPage() {
 								<TableHead>Date</TableHead>
 								<TableHead>Time</TableHead>
 								<TableHead>Location</TableHead>
-								<TableHead>Status</TableHead>
 								<TableHead>Actions</TableHead>
 							</TableRow>
 						</TableHeader>
@@ -132,11 +158,6 @@ export default function EventsManagementPage() {
 									<TableCell>{event.time}</TableCell>
 									<TableCell>{event.location}</TableCell>
 									<TableCell>
-										<span className="px-2 py-1 rounded text-xs font-semibold bg-neutral-200 text-neutral-700">
-											{event.status}
-										</span>
-									</TableCell>
-									<TableCell>
 										<Button variant="link" size="sm">EDIT</Button>
 									</TableCell>
 								</TableRow>
@@ -146,44 +167,7 @@ export default function EventsManagementPage() {
 				)}
 			</div>
 
-			<Modal open={showModal} onClose={() => setShowModal(false)} title="Add New Event">
-				<form>
-					<div className="mb-4">
-						<label className="block text-sm font-semibold mb-1">Event Title</label>
-						<input type="text" className="w-full rounded border px-3 py-2" placeholder="e.g. Intro to Python Workshop" />
-					</div>
-					<div className="mb-4">
-						<label className="block text-sm font-semibold mb-1">Description</label>
-						<textarea className="w-full rounded border px-3 py-2" placeholder="Describe the event goals and requirements..." />
-					</div>
-					<div className="mb-4">
-						<label className="block text-sm font-semibold mb-1">Poster Photo URL</label>
-						<input type="url" className="w-full rounded border px-3 py-2" placeholder="https://example.com/poster.png" />
-					</div>
-					<div className="flex gap-4 mb-4">
-						<div className="flex-1">
-							<label className="block text-sm font-semibold mb-1">Date & Time</label>
-							<input type="text" className="w-full rounded border px-3 py-2" placeholder="mm/dd/yyyy, --:-- --" />
-						</div>
-						<div className="flex-1">
-							<label className="block text-sm font-semibold mb-1">Location</label>
-							<input type="text" className="w-full rounded border px-3 py-2" placeholder="e.g. MC 402 or Zoom Link" />
-						</div>
-					</div>
-					<div className="mb-4">
-						<label className="block text-sm font-semibold mb-1">Recurring</label>
-						<select className="w-full rounded border px-3 py-2">
-							<option>None</option>
-							<option>Weekly</option>
-							<option>Monthly</option>
-						</select>
-					</div>
-					<div className="flex gap-4">
-						<Button variant="primary" type="submit">Create Event</Button>
-						<Button variant="secondary" type="button" onClick={() => setShowModal(false)}>Cancel</Button>
-					</div>
-				</form>
-			</Modal>
+			{showModal && <EventModal showModal={showModal} setShowModal={setShowModal} />}
 		</div>
 	);
 }

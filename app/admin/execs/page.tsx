@@ -2,25 +2,91 @@
 
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/ui/modal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { ExecRecord, fetchCurrentExecs, fetchPreviousExecs, WithKey } from "@/lib/firebase";
 
-const currentExecs = [
-	{ name: "Alex Rivera", role: "President", contact: "alex@brock.ca" },
-	{ name: "Jordan Smith", role: "Vice President", contact: "jordan@brock.ca" },
-	{ name: "Casey Chen", role: "Treasurer", contact: "casey@brock.ca" },
-	{ name: "Taylor Morgan", role: "Secretary", contact: "taylor@brock.ca" },
-];
+type TeamMember = WithKey<ExecRecord>;
 
-const pastExecs = [
-	{ name: "Morgan Lee", role: "President", contact: "morgan@brock.ca" },
-	{ name: "Sam Patel", role: "Vice President", contact: "sam@brock.ca" },
-	{ name: "Jamie Fox", role: "Treasurer", contact: "jamie@brock.ca" },
-];
+const UNKNOWN_ROLE_PRIORITY = Number.MAX_SAFE_INTEGER;
+
+const ROLE_PRIORITY: Record<string, number> = {
+  president: 1,
+  "vice president": 2,
+  "co-president": 3,
+  treasurer: 4,
+  executive: 5,
+};
+
+const getRolePriority = (title?: string): number => {
+  const normalizedTitle = title?.trim().toLowerCase() ?? "";
+  return ROLE_PRIORITY[normalizedTitle] ?? UNKNOWN_ROLE_PRIORITY;
+};
+
+const sortCurrentExecsByRoleThenDatabaseOrder = (members: TeamMember[]): TeamMember[] => {
+  const orderByKey = new Map<string, number>();
+  members.forEach((member, index) => {
+    orderByKey.set(member.$key, index);
+  });
+
+  return [...members].sort((a, b) => {
+    const byRole = getRolePriority(a.title) - getRolePriority(b.title);
+    if (byRole !== 0) {
+      return byRole;
+    }
+
+    const aOrder = orderByKey.get(a.$key) ?? 0;
+    const bOrder = orderByKey.get(b.$key) ?? 0;
+    return aOrder - bOrder;
+  });
+};
 
 export default function ExecutivesManagementPage() {
-	const [showModal, setShowModal] = useState(false);
-	const [showPast, setShowPast] = useState(false);
+	  const [currentExecs, setCurrentExecs] = useState<TeamMember[]>([]);
+	  const [previousExecs, setPreviousExecs] = useState<TeamMember[]>([]);
+	  const [loading, setLoading] = useState(true);
+	  const [error, setError] = useState<string | null>(null);
+	  const [showModal, setShowModal] = useState(false);
+	  const [showPast, setShowPast] = useState(false);
+	
+	  useEffect(() => {
+		let active = true;
+	
+		const loadTeam = async () => {
+		  setLoading(true);
+		  setError(null);
+	
+		  try {
+			const [current, previous] = await Promise.all([
+			  fetchCurrentExecs(),
+			  fetchPreviousExecs(),
+			]);
+	
+			if (!active) {
+			  return;
+			}
+	
+			setCurrentExecs(sortCurrentExecsByRoleThenDatabaseOrder(current));
+			setPreviousExecs(previous);
+		  } catch {
+			if (!active) {
+			  return;
+			}
+			setError("Could not load team members right now.");
+		  } finally {
+			if (active) {
+			  setLoading(false);
+			}
+		  }
+		};
+	
+		void loadTeam();
+	
+		return () => {
+		  active = false;
+		};
+	  }, []);
+	
 	
 	return (
 		<>
@@ -41,7 +107,6 @@ export default function ExecutivesManagementPage() {
 							<TableRow>
 								<TableHead>Name</TableHead>
 								<TableHead>Role</TableHead>
-								<TableHead>Contact</TableHead>
 								<TableHead>Edit</TableHead>
 							</TableRow>
 						</TableHeader>
@@ -49,8 +114,7 @@ export default function ExecutivesManagementPage() {
 							{currentExecs.map((exec, idx) => (
 								<TableRow key={idx}>
 									<TableCell>{exec.name}</TableCell>
-									<TableCell>{exec.role}</TableCell>
-									<TableCell>{exec.contact}</TableCell>
+									<TableCell>{exec.title}</TableCell>
 									<TableCell>
 										<Button variant="link" size="sm" onClick={() => setShowModal(true)}>EDIT</Button>
 									</TableCell>
@@ -76,16 +140,14 @@ export default function ExecutivesManagementPage() {
 									<TableRow>
 										<TableHead>Name</TableHead>
 										<TableHead>Role</TableHead>
-										<TableHead>Contact</TableHead>
 										<TableHead>Edit</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{pastExecs.map((exec, idx) => (
+									{previousExecs.map((exec, idx) => (
 										<TableRow key={idx}>
 											<TableCell>{exec.name}</TableCell>
-											<TableCell>{exec.role}</TableCell>
-											<TableCell>{exec.contact}</TableCell>
+											<TableCell>{exec.title}</TableCell>
 											<TableCell>
 												<Button variant="link" size="sm" onClick={() => setShowModal(true)}>EDIT</Button>
 											</TableCell>
@@ -93,13 +155,12 @@ export default function ExecutivesManagementPage() {
 									))}
 								</TableBody>
 							</Table>
-							<div className="mt-2 text-right text-xs text-neutral-500 font-semibold">{pastExecs.length} past members</div>
+							<div className="mt-2 text-right text-xs text-neutral-500 font-semibold">{previousExecs.length} past members</div>
 						</div>
 					)}
 				</div>
 			</div>
 			<Modal open={showModal} onClose={() => setShowModal(false)} title="Edit Executive">
-				{/* Modal form for editing/adding executive details */}
 				<form>
 					<div className="mb-4">
 						<label className="block text-sm font-semibold mb-1">Full Name</label>
