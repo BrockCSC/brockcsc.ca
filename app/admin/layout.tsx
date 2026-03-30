@@ -17,7 +17,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
 
   // Authentication logic: Redirect to login if not authenticated, otherwise show admin layout
   useEffect(() => {
@@ -31,7 +30,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           router.push("/");
         }
       } else {
-        setUser(user);
         setLoading(false);
       }
     });

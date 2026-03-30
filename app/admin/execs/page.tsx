@@ -44,8 +44,6 @@ const sortCurrentExecsByRoleThenDatabaseOrder = (members: TeamMember[]): TeamMem
 export default function ExecutivesManagementPage() {
 	  const [currentExecs, setCurrentExecs] = useState<TeamMember[]>([]);
 	  const [previousExecs, setPreviousExecs] = useState<TeamMember[]>([]);
-	  const [loading, setLoading] = useState(true);
-	  const [error, setError] = useState<string | null>(null);
 	  const [showModal, setShowModal] = useState(false);
 	  const [showPast, setShowPast] = useState(false);
 	
@@ -53,8 +51,6 @@ export default function ExecutivesManagementPage() {
 		let active = true;
 	
 		const loadTeam = async () => {
-		  setLoading(true);
-		  setError(null);
 	
 		  try {
 			const [current, previous] = await Promise.all([
@@ -72,11 +68,7 @@ export default function ExecutivesManagementPage() {
 			if (!active) {
 			  return;
 			}
-			setError("Could not load team members right now.");
-		  } finally {
-			if (active) {
-			  setLoading(false);
-			}
+			console.log("Could not load team members right now.");
 		  }
 		};
 	

@@ -10,18 +10,15 @@ import { useEffect, useState } from "react";
 export default function AdminPage() {
 
   type EventItem = WithKey<EventRecord>;
-    
-    const [showModal, setShowModal] = useState(false);
-    const [showPastEvents, setShowPastEvents] = useState(false);
 
-    const [futureEvents, setFutureEvents] = useState<EventItem[]>([]);
-    const [nowTimestamp, setNowTimestamp] = useState(() => Date.now());
+  const [futureEvents, setFutureEvents] = useState<EventItem[]>([]);
+  const nowTimestamp = Date.now();
 
-    useEffect(() => {
-    let active = true;
+  useEffect(() => {
+  let active = true;
 
-    const load = async () => {
-        try {
+  const load = async () => {
+      try {
         const futureEventsRaw = await fetchFutureEvents();
         if (!active) {
           return;
@@ -42,17 +39,15 @@ export default function AdminPage() {
   }, []);
 
   const adaptEventForDisplay = (event: EventItem) => ({
-		title: event.title,
-		date: event.schedule?.startDate,
-		time: event.schedule?.startTime,
-		location: event.location?.split(",")[0],  
+    title: event.title,
+    date: event.schedule?.startDate,
+    time: event.schedule?.startTime,
+    location: event.location?.split(",")[0],  
     description: event.description,
     image: event.image,
-	});
+  });
 
   const events = futureEvents.map(adaptEventForDisplay);
-
-  console.log(events)
 
   return (
     <div>
