@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import Modal from "@/components/ui/modal";
 import { useEffect, useState } from "react";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { ExecRecord, fetchCurrentExecs, fetchPreviousExecs, WithKey } from "@/lib/firebase";
