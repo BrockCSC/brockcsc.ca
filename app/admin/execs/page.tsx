@@ -5,6 +5,7 @@ import Modal from "@/components/ui/modal";
 import { useEffect, useState } from "react";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { ExecRecord, fetchCurrentExecs, fetchPreviousExecs, WithKey } from "@/lib/firebase";
+import ExecModal from "./execModel";
 
 type TeamMember = WithKey<ExecRecord>;
 
@@ -79,7 +80,6 @@ export default function ExecutivesManagementPage() {
 		};
 	  }, []);
 	
-	
 	return (
 		<>
 			<div>
@@ -152,42 +152,7 @@ export default function ExecutivesManagementPage() {
 					)}
 				</div>
 			</div>
-			<Modal open={showModal} onClose={() => setShowModal(false)} title="Edit Executive">
-				<form>
-					<div className="mb-4">
-						<label className="block text-sm font-semibold mb-1">Full Name</label>
-						<input type="text" className="w-full rounded border px-3 py-2" placeholder="John Doe" />
-					</div>
-					<div className="mb-4">
-						<label className="block text-sm font-semibold mb-1">Role / Title</label>
-						<select className="w-full rounded border px-3 py-2">
-							<option>Select Role</option>
-							<option>President</option>
-							<option>Vice President</option>
-							<option>Treasurer</option>
-							<option>Secretary</option>
-						</select>
-					</div>
-					<div className="mb-4">
-						<label className="block text-sm font-semibold mb-1">Email</label>
-						<input type="email" className="w-full rounded border px-3 py-2" placeholder="edu@brock.ca" />
-					</div>
-					<div className="mb-4">
-						<label className="block text-sm font-semibold mb-1">Social URL</label>
-						<input type="text" className="w-full rounded border px-3 py-2" placeholder="Linkedin or Portfolio" />
-					</div>
-					<div className="mb-4">
-						<label className="block text-sm font-semibold mb-1">Profile Photo URL</label>
-						<input type="url" className="w-full rounded border px-3 py-2" placeholder="https://example.com/photo.png" />
-					</div>
-					<div className="flex gap-4">
-						<Button variant="primary" type="submit">Save Executive Member</Button>
-						<Button variant="secondary" type="button" onClick={() => setShowModal(false)}>
-							Cancel
-						</Button>
-					</div>
-				</form>
-			</Modal>
+			{showModal && <ExecModal showModal={showModal} setShowModal={setShowModal} />}
 		</>
 	);
 }

@@ -56,10 +56,13 @@ export default function EventsManagementPage() {
 	);
 
 	const adaptEventForDisplay = (event: EventItem) => ({
+		id: crypto.randomUUID(),
 		title: event.title,
 		date: event.schedule?.startDate,
 		time: event.schedule?.startTime,
-		location: event.location?.split(",")[0],
+		location: event.location?.split(",")[0],  
+		description: event.description,
+		image: event.image,
 	});
 
 	const upcomingEvents = upcoming.map((event) => adaptEventForDisplay(event));
@@ -88,8 +91,8 @@ export default function EventsManagementPage() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{upcomingEvents.map((event, idx) => (
-							<TableRow key={idx}>
+						{upcomingEvents.map((event) => (
+							<TableRow key={event.id}>
 								<TableCell>{event.title}</TableCell>
 								<TableCell>{event.date}</TableCell>
 								<TableCell>{event.time}</TableCell>
@@ -116,8 +119,8 @@ export default function EventsManagementPage() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{recurringEvents.map((event, idx) => (
-							<TableRow key={idx}>
+						{recurringEvents.map((event) => (
+							<TableRow key={event.id}>
 								<TableCell>{event.title}</TableCell>
 								<TableCell>{event.date}</TableCell>
 								<TableCell>{event.time}</TableCell>
@@ -151,8 +154,8 @@ export default function EventsManagementPage() {
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{pastEvents.map((event, idx) => (
-								<TableRow key={idx}>
+							{pastEvents.map((event) => (
+								<TableRow key={event.id}>
 									<TableCell>{event.title}</TableCell>
 									<TableCell>{event.date}</TableCell>
 									<TableCell>{event.time}</TableCell>
@@ -166,8 +169,7 @@ export default function EventsManagementPage() {
 					</Table>
 				)}
 			</div>
-
-			{showModal && <EventModal showModal={showModal} setShowModal={setShowModal} />}
+			{showModal && <EventModal showModal={showModal} setShowModal={setShowModal} variant="create" />}
 		</div>
 	);
 }
