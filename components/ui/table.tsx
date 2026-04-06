@@ -1,11 +1,31 @@
 import * as React from "react"
-
 import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
+
+/* ---------- TYPES ---------- */
+
+type TableColumn = {
+  key: string
+  label: string
+}
+
+type TableData = {
+  columns: TableColumn[]
+  rows: Record<string, any>[]
+}
 
 type TableProps = React.HTMLAttributes<HTMLTableElement> & {
   containerClassName?: string
   containerStyle?: React.CSSProperties
+
+  // NEW (optional JSON mode)
+  data?: TableData
+
+  // responsive mode
+  mobileVariant?: "scroll" | "stack"
 }
+
+/* ---------- DEFAULT STYLES ---------- */
 
 const tableDefaults = {
   "--table-border": "#000000",
@@ -20,140 +40,116 @@ const tableDefaults = {
   "--table-bg": "#ffffff",
 } as React.CSSProperties
 
-// Customize the table by passing CSS variables via containerStyle or a wrapper class.
-// Example: <Table containerStyle={{ "--table-border": "#111", "--table-head-bg": "#f7f7f7" }} />
+/* ---------- MAIN TABLE ---------- */
 
 const Table = React.forwardRef<HTMLTableElement, TableProps>(
-  ({ className, containerClassName, containerStyle, ...props }, ref) => (
-    <div
-      className={cn(
-        "relative w-full overflow-auto rounded-[var(--table-radius)] border-2 border-[color:var(--table-border)] bg-[color:var(--table-bg)] shadow-[var(--table-shadow)]",
-        containerClassName
-      )}
-      style={{ ...tableDefaults, ...containerStyle }}
-    >
-      <table
-        ref={ref}
+  (
+    {
+      className,
+      containerClassName,
+      containerStyle,
+      data,
+      mobileVariant = "scroll",
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const isStack = mobileVariant === "stack" && data
+
+
+const renderCell = (value: any) => {
+  // Badge support
+  if (value && typeof value === "object" && value.type === "badge") {
+    return (
+      <Badge variant={value.variant || "default"}>
+        {value.label}
+      </Badge>
+    )
+  }
+
+  // fallback (string, number, etc.)
+  return value
+}
+
+
+    return (
+      <div
         className={cn(
-          "w-full caption-bottom text-base text-[color:var(--table-text)]",
-          className
+          "relative w-full rounded-[var(--table-radius)] border-2 border-[color:var(--table-border)] bg-[color:var(--table-bg)] shadow-[var(--table-shadow)] overflow-hidden",
+          // horizontal scroll for mobile
+          mobileVariant === "scroll" && "overflow-x-auto",
+          containerClassName
         )}
-        {...props}
-      />
-    </div>
-  )
+        style={{ ...tableDefaults, ...containerStyle }}
+      >
+        {/* ---------- STACK MODE (MOBILE CARDS) ---------- */}
+        {isStack ? (
+          <div className="md:hidden flex flex-col gap-4 p-4">
+            {data.rows.map((row, i) => (
+              <div
+                key={i}
+                className="border-2 border-[color:var(--table-border)] rounded-xl p-4 shadow-[2px_2px_0_#000]"
+              >
+                {data.columns.map((col) => (
+                  <div key={col.key} className="flex justify-between py-1">
+                    <span className="font-semibold">{col.label}</span>
+                    <span>{renderCell(row[col.key])}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        {/* ---------- NORMAL TABLE ---------- */}
+        <table
+          ref={ref}
+          className={cn(
+            "w-full caption-bottom text-base text-[color:var(--table-text)]",
+            isStack ? "hidden md:table" : "",
+            className
+          )}
+          {...props}
+        >
+          {/* JSON MODE */}
+          {data ? (
+            <>
+              <thead className="bg-[color:var(--table-head-bg)]">
+                <tr className="border-b-2 border-[color:var(--table-border)]">
+                  {data.columns.map((col) => (
+                    <th key={col.key} className="h-12 px-6 text-left font-semibold">
+                      {col.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody>
+                {data.rows.map((row, i) => (
+                  <tr
+                    key={i}
+                    className="border-b border-[color:var(--table-divider)] hover:bg-[color:var(--table-hover)]"
+                  >
+                    {data.columns.map((col) => (
+                      <td key={col.key} className="p-4">
+                          {renderCell(row[col.key])}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </>
+          ) : (
+            // MANUAL MODE (your current usage)
+            children
+          )}
+        </table>
+      </div>
+    )
+  }
 )
+
 Table.displayName = "Table"
 
-const TableHeader = React.forwardRef<
-  HTMLTableSectionElement,
-  React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <thead
-    ref={ref}
-    className={cn(
-      "bg-[color:var(--table-head-bg)] [&_tr]:border-b-2 [&_tr]:border-[color:var(--table-border)]",
-      className
-    )}
-    {...props}
-  />
-))
-TableHeader.displayName = "TableHeader"
-
-const TableBody = React.forwardRef<
-  HTMLTableSectionElement,
-  React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <tbody
-    ref={ref}
-    className={cn("[&_tr:last-child]:border-0", className)}
-    {...props}
-  />
-))
-TableBody.displayName = "TableBody"
-
-const TableFooter = React.forwardRef<
-  HTMLTableSectionElement,
-  React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <tfoot
-    ref={ref}
-    className={cn(
-      "border-t-2 border-[color:var(--table-border)] bg-[color:var(--table-head-bg)] font-semibold [&>tr]:last:border-b-0",
-      className
-    )}
-    {...props}
-  />
-))
-TableFooter.displayName = "TableFooter"
-
-const TableRow = React.forwardRef<
-  HTMLTableRowElement,
-  React.HTMLAttributes<HTMLTableRowElement>
->(({ className, ...props }, ref) => (
-  <tr
-    ref={ref}
-    className={cn(
-      "border-b border-[color:var(--table-divider)] transition-colors hover:bg-[color:var(--table-hover)]",
-      className
-    )}
-    {...props}
-  />
-))
-TableRow.displayName = "TableRow"
-
-const TableHead = React.forwardRef<
-  HTMLTableCellElement,
-  React.ThHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
-  <th
-    ref={ref}
-    className={cn(
-      "h-12 px-6 text-left align-middle font-semibold text-[color:var(--table-head-text)] [&:has([role=checkbox])]:pr-0",
-      className
-    )}
-    {...props}
-  />
-))
-TableHead.displayName = "TableHead"
-
-const TableCell = React.forwardRef<
-  HTMLTableCellElement,
-  React.TdHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
-  <td
-    ref={ref}
-    className={cn(
-      "p-4 align-middle text-[color:var(--table-text)] [&:has([role=checkbox])]:pr-0",
-      className
-    )}
-    {...props}
-  />
-))
-TableCell.displayName = "TableCell"
-
-const TableCaption = React.forwardRef<
-  HTMLTableCaptionElement,
-  React.HTMLAttributes<HTMLTableCaptionElement>
->(({ className, ...props }, ref) => (
-  <caption
-    ref={ref}
-    className={cn(
-      "mt-4 text-sm text-[color:var(--table-caption)] opacity-70",
-      className
-    )}
-    {...props}
-  />
-))
-TableCaption.displayName = "TableCaption"
-
-export {
-  Table,
-  TableHeader,
-  TableBody,
-  TableFooter,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableCaption,
-}
+export { Table }
