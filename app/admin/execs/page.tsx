@@ -45,35 +45,33 @@ export default function ExecutivesManagementPage() {
 	  const [currentExecs, setCurrentExecs] = useState<TeamMember[]>([]);
 	  const [previousExecs, setPreviousExecs] = useState<TeamMember[]>([]);
 	  const [showModal, setShowModal] = useState(false);
+	  const [selectedExec, setSelectedExec] = useState<TeamMember | null>(null);
 	  const [showPast, setShowPast] = useState(false);
 	
+	  const loadTeam = async (active = true) => {
+		try {
+		  const [current, previous] = await Promise.all([
+			fetchCurrentExecs(),
+			fetchPreviousExecs(),
+		  ]);
+  
+		  if (!active) {
+			return;
+		  }
+  
+		  setCurrentExecs(sortCurrentExecsByRoleThenDatabaseOrder(current));
+		  setPreviousExecs(previous);
+		} catch {
+		  if (!active) {
+			return;
+		  }
+		  console.log("Could not load team members right now.");
+		}
+	  };
+
 	  useEffect(() => {
 		let active = true;
-	
-		const loadTeam = async () => {
-	
-		  try {
-			const [current, previous] = await Promise.all([
-			  fetchCurrentExecs(),
-			  fetchPreviousExecs(),
-			]);
-	
-			if (!active) {
-			  return;
-			}
-	
-			setCurrentExecs(sortCurrentExecsByRoleThenDatabaseOrder(current));
-			setPreviousExecs(previous);
-		  } catch {
-			if (!active) {
-			  return;
-			}
-			console.log("Could not load team members right now.");
-		  }
-		};
-	
-		void loadTeam();
-	
+		void loadTeam(active);
 		return () => {
 		  active = false;
 		};
@@ -86,7 +84,7 @@ export default function ExecutivesManagementPage() {
 				<p className="text-neutral-500 mb-6">Central dashboard to oversee the executive team, update roles, and add new executive members for the Brock Computer Science Club.</p>
 
 				<div className="flex items-center gap-4 mb-6">
-					<Button variant="primary" onClick={() => setShowModal(true)}>
+					<Button variant="primary" onClick={() => { setSelectedExec(null); setShowModal(true); }}>
 						Add Executive
 					</Button>
 				</div>
@@ -107,7 +105,7 @@ export default function ExecutivesManagementPage() {
 									<TableCell>{exec.name}</TableCell>
 									<TableCell>{exec.title}</TableCell>
 									<TableCell>
-										<Button variant="link" size="sm" onClick={() => setShowModal(true)}>EDIT</Button>
+										<Button variant="link" size="sm" onClick={() => { setSelectedExec(exec); setShowModal(true); }}>EDIT</Button>
 									</TableCell>
 								</TableRow>
 							))}
@@ -140,7 +138,7 @@ export default function ExecutivesManagementPage() {
 											<TableCell>{exec.name}</TableCell>
 											<TableCell>{exec.title}</TableCell>
 											<TableCell>
-												<Button variant="link" size="sm" onClick={() => setShowModal(true)}>EDIT</Button>
+												<Button variant="link" size="sm" onClick={() => { setSelectedExec(exec); setShowModal(true); }}>EDIT</Button>
 											</TableCell>
 										</TableRow>
 									))}
@@ -151,7 +149,7 @@ export default function ExecutivesManagementPage() {
 					)}
 				</div>
 			</div>
-			{showModal && <ExecModal showModal={showModal} setShowModal={setShowModal} />}
+			{showModal && <ExecModal showModal={showModal} setShowModal={setShowModal} selectedExec={selectedExec} onSave={() => void loadTeam()} />}
 		</>
 	);
 }
