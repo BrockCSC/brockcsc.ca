@@ -107,5 +107,5 @@ export default function ExecModal({ showModal, setShowModal, selectedExec, onSav
 					</div>
 				</form>
 			</Modal>
-    )
+    );
 }
