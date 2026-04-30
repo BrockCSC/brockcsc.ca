@@ -12,6 +12,8 @@ export {
   fetchFutureEvents,
   fetchPastEvents,
   fetchPreviousExecs,
+  createExec,
+  updateExec,
 } from './realtime';
 export type {
   DscCardRecord,

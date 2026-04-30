@@ -8,6 +8,9 @@ import {
   orderByChild,
   query,
   ref,
+  push,
+  update,
+  set,
 } from 'firebase/database';
 
 import { getFirebaseClient } from './client';
@@ -83,6 +86,23 @@ export const fetchPreviousExecs = async (): Promise<WithKey<ExecRecord>[]> =>
     orderByChild('isCurrentExec'),
     equalTo(false),
   ]);
+
+export const createExec = async (exec: ExecRecord): Promise<void> => {
+  const { database } = getFirebaseClient();
+  const dbRef = ref(database, '/exec');
+  const newExecRef = push(dbRef);
+
+  await set(newExecRef, exec);
+};
+
+export const updateExec = async (
+  key: string,
+  exec: Partial<ExecRecord>
+): Promise<void> => {
+  const { database } = getFirebaseClient();
+  const dbRef = ref(database, `/exec/${key}`);
+  await update(dbRef, exec);
+};
 
 export const fetchAllEvents = async (): Promise<WithKey<EventRecord>[]> =>
   fetchList<EventRecord>('/event');
