@@ -153,6 +153,31 @@ export const fetchEventById = async (
   eventId: string
 ): Promise<WithKey<EventRecord> | null> => fetchOne<EventRecord>('/event', eventId);
 
+export const editEvent = async (
+  eventId: string,
+  event: Partial<EventRecord>
+): Promise<void> => {
+  const { database } = getFirebaseClient();
+  const dbRef = ref(database, `/event/${eventId}`);
+  await update(dbRef, event);
+};
+
+export const deleteEvent = async (
+  eventId: string,
+): Promise<void> => {
+  const { database } = getFirebaseClient();
+  const dbRef = ref(database, `/event/${eventId}`);
+  await remove(dbRef);
+};
+
+export const createEvent = async (event: EventRecord): Promise<void> => {
+  const { database } = getFirebaseClient();
+  const dbRef = ref(database, '/event');
+  const newEventRef = push(dbRef);
+
+  await set(newEventRef, event);
+};
+
 export const fetchAllDscCards = async (): Promise<WithKey<DscCardRecord>[]> =>
   fetchList<DscCardRecord>('/dsc');
 
