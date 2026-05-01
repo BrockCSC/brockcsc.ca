@@ -521,3 +521,16 @@ export const formatEventTimeLabel = (
 
   return `${startText} - ${endText}`;
 };
+
+export const formatNextOccurrenceDate = (
+  occurrenceStartTimestamp: number | null
+): string => {
+  if (typeof occurrenceStartTimestamp !== "number") {
+    return "TBD";
+  }
+
+  const parts = getTimeZoneParts(occurrenceStartTimestamp);
+  const weekday = WEEKDAY_NAMES_LONG[getTorontoWeekdayFromTimestamp(occurrenceStartTimestamp)];
+  
+  return `${weekday}, ${MONTH_NAMES_SHORT[parts.month - 1]} ${parts.day}`;
+};

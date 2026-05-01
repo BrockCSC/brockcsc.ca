@@ -88,31 +88,6 @@ export const fetchPreviousExecs = async (): Promise<WithKey<ExecRecord>[]> =>
     equalTo(false),
   ]);
 
-export const createExec = async (exec: ExecRecord): Promise<void> => {
-  const { database } = getFirebaseClient();
-  const dbRef = ref(database, '/exec');
-  const newExecRef = push(dbRef);
-
-  await set(newExecRef, exec);
-};
-
-export const updateExec = async (
-  key: string,
-  exec: Partial<ExecRecord>
-): Promise<void> => {
-  const { database } = getFirebaseClient();
-  const dbRef = ref(database, `/exec/${key}`);
-  await update(dbRef, exec);
-};
-
-export const deleteExec = async (
-  key: string,
-): Promise<void> => {
-  const { database } = getFirebaseClient();
-  const dbRef = ref(database, `/exec/${key}`);
-  await remove(dbRef);
-};
-
 export const fetchAllEvents = async (): Promise<WithKey<EventRecord>[]> =>
   fetchList<EventRecord>('/event');
 
@@ -160,6 +135,32 @@ export const editEvent = async (
   const { database } = getFirebaseClient();
   const dbRef = ref(database, `/event/${eventId}`);
   await update(dbRef, event);
+};
+
+
+export const createExec = async (exec: ExecRecord): Promise<void> => {
+  const { database } = getFirebaseClient();
+  const dbRef = ref(database, '/exec');
+  const newExecRef = push(dbRef);
+
+  await set(newExecRef, exec);
+};
+
+export const updateExec = async (
+  key: string,
+  exec: Partial<ExecRecord>
+): Promise<void> => {
+  const { database } = getFirebaseClient();
+  const dbRef = ref(database, `/exec/${key}`);
+  await update(dbRef, exec);
+};
+
+export const deleteExec = async (
+  key: string,
+): Promise<void> => {
+  const { database } = getFirebaseClient();
+  const dbRef = ref(database, `/exec/${key}`);
+  await remove(dbRef);
 };
 
 export const deleteEvent = async (

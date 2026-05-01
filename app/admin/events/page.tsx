@@ -6,36 +6,38 @@ import EventModal from "./eventsModel";
 import { useEffect, useMemo, useState } from "react";
 import { EventRecord, fetchAllEvents, WithKey } from "@/lib/firebase";
 import { classifyEventsByTiming } from "@/lib/events/classify";
+import { getRecurringScheduleText, getEventTiming, formatEventDateLabel, formatEventTimeLabel, formatNextOccurrenceDate } from "@/lib/events/schedule";
+import { deleteEvent } from "@/lib/firebase/realtime";
 
 export default function EventsManagementPage() {
 	type EventItem = WithKey<EventRecord>;
 	
 	const [showModal, setShowModal] = useState(false);
 	const [showPastEvents, setShowPastEvents] = useState(false);
+	const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
 
 	const [events, setEvents] = useState<EventItem[]>([]);
 	const nowTimestamp = Date.now();
 
-	useEffect(() => {
-	let active = true;
-
-	const load = async () => {
-			try {
+	const load = async (active = true) => {
+		try {
 			const allEvents = await fetchAllEvents();
 			if (!active) {
 				return;
 			}
 			setEvents(allEvents);
-			} catch {
+		} catch {
 			if (!active) {
 				return;
 			}
 			console.error("Error loading events:");
-			}
-		};
-		
-		void load();
-			return () => {
+		}
+	};
+
+	useEffect(() => {
+		let active = true;
+		void load(active);
+		return () => {
 			active = false;
 		};
 	}, []);
@@ -56,13 +58,14 @@ export default function EventsManagementPage() {
 	);
 
 	const adaptEventForDisplay = (event: EventItem) => ({
-		id: crypto.randomUUID(),
+		id: event.$key,
 		title: event.title,
 		date: event.schedule?.startDate,
 		time: event.schedule?.startTime,
 		location: event.location?.split(",")[0],  
 		description: event.description,
 		image: event.image,
+		rawEvent: event,
 	});
 
 	const upcomingEvents = upcoming.map((event) => adaptEventForDisplay(event));
@@ -75,7 +78,7 @@ export default function EventsManagementPage() {
 			<p className="text-neutral-500 mb-6">Plan, coordinate, and review club events</p>
 
 			<div className="flex items-center justify-between mb-6">
-				<Button variant="primary" onClick={() => setShowModal(true)}>+ New Event</Button>
+				<Button variant="primary" onClick={() => { setSelectedEvent(null); setShowModal(true); }}>+ New Event</Button>
 			</div>
 
 			<div className="mb-10">
@@ -87,18 +90,19 @@ export default function EventsManagementPage() {
 							<TableHead>Date</TableHead>
 							<TableHead>Time</TableHead>
 							<TableHead>Location</TableHead>
-							<TableHead>Actions</TableHead>
+							<TableHead className="text-center">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{upcomingEvents.map((event) => (
 							<TableRow key={event.id}>
-								<TableCell>{event.title}</TableCell>
+								<TableCell className="max-w-[12rem] truncate">{event.title}</TableCell>
 								<TableCell>{event.date}</TableCell>
 								<TableCell>{event.time}</TableCell>
-								<TableCell>{event.location}</TableCell>
-								<TableCell>
-									<Button variant="link" size="sm">EDIT</Button>
+								<TableCell className="max-w-[10rem] truncate">{event.location}</TableCell>
+								<TableCell className="flex justify-around gap-[15px]]">
+									<Button variant="link" size="sm" onClick={() => { setSelectedEvent(event.rawEvent); setShowModal(true); }}>EDIT</Button>
+									<Button variant="link" className="text-red-600" size="sm" onClick={async () => { await deleteEvent(event.id); load(); }}>Delete</Button>
 								</TableCell>
 							</TableRow>
 						))}
@@ -112,24 +116,29 @@ export default function EventsManagementPage() {
 					<TableHeader>
 						<TableRow>
 							<TableHead>Event Title</TableHead>
-							<TableHead>Date</TableHead>
+							<TableHead>Recurrence</TableHead>
+							<TableHead>Next Occurrence</TableHead>
 							<TableHead>Time</TableHead>
 							<TableHead>Location</TableHead>
-							<TableHead>Actions</TableHead>
+							<TableHead className="text-center">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{recurringEvents.map((event) => (
+						{recurringEvents.map((event) => {
+							const nextStartTimestamp = getEventTiming(event.rawEvent, nowTimestamp).nextStartTimestamp;
+							return (
 							<TableRow key={event.id}>
-								<TableCell>{event.title}</TableCell>
-								<TableCell>{event.date}</TableCell>
-								<TableCell>{event.time}</TableCell>
-								<TableCell>{event.location}</TableCell>
-								<TableCell>
-									<Button variant="link" size="sm">EDIT</Button>
+								<TableCell className="max-w-[12rem] truncate">{event.title}</TableCell>
+								<TableCell>{event.rawEvent.schedule?.recurrence?.unit}</TableCell>
+								<TableCell>{formatNextOccurrenceDate(nextStartTimestamp)}</TableCell>
+								<TableCell>{formatEventTimeLabel(event.rawEvent, nextStartTimestamp)}</TableCell>
+								<TableCell className="max-w-[10rem] truncate">{event.location}</TableCell>
+								<TableCell className="flex justify-around gap-[15px]]">
+									<Button variant="link" size="sm" onClick={() => { setSelectedEvent(event.rawEvent); setShowModal(true); }}>EDIT</Button>
+									<Button variant="link" className="text-red-600" size="sm" onClick={async () => { await deleteEvent(event.id); load(); }}>Delete</Button>
 								</TableCell>
 							</TableRow>
-						))}
+						)})}
 					</TableBody>
 				</Table>
 			</div>
@@ -150,18 +159,19 @@ export default function EventsManagementPage() {
 								<TableHead>Date</TableHead>
 								<TableHead>Time</TableHead>
 								<TableHead>Location</TableHead>
-								<TableHead>Actions</TableHead>
+								<TableHead className="text-center">Actions</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{pastEvents.map((event) => (
 								<TableRow key={event.id}>
-									<TableCell>{event.title}</TableCell>
+									<TableCell className="max-w-[12rem] truncate">{event.title}</TableCell>
 									<TableCell>{event.date}</TableCell>
 									<TableCell>{event.time}</TableCell>
-									<TableCell>{event.location}</TableCell>
-									<TableCell>
-										<Button variant="link" size="sm">EDIT</Button>
+									<TableCell className="max-w-[10rem] truncate">{event.location}</TableCell>
+									<TableCell className="flex justify-around gap-[15px]]">
+										<Button variant="link" size="sm" onClick={() => { setSelectedEvent(event.rawEvent); setShowModal(true); }}>EDIT</Button>
+										<Button variant="link" className="text-red-600" size="sm" onClick={async () => { await deleteEvent(event.id); load(); }}>Delete</Button>
 									</TableCell>
 								</TableRow>
 							))}
@@ -169,7 +179,7 @@ export default function EventsManagementPage() {
 					</Table>
 				)}
 			</div>
-			{showModal && <EventModal showModal={showModal} setShowModal={setShowModal} variant="create" />}
+			{showModal && <EventModal showModal={showModal} setShowModal={setShowModal} variant={selectedEvent ? "edit" : "create"} selectedEvent={selectedEvent} onSave={() => void load()} />}
 		</div>
 	);
 }
