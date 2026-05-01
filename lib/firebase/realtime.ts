@@ -11,6 +11,7 @@ import {
   push,
   update,
   set,
+  remove,
 } from 'firebase/database';
 
 import { getFirebaseClient } from './client';
@@ -102,6 +103,14 @@ export const updateExec = async (
   const { database } = getFirebaseClient();
   const dbRef = ref(database, `/exec/${key}`);
   await update(dbRef, exec);
+};
+
+export const deleteExec = async (
+  key: string,
+): Promise<void> => {
+  const { database } = getFirebaseClient();
+  const dbRef = ref(database, `/exec/${key}`);
+  await remove(dbRef);
 };
 
 export const fetchAllEvents = async (): Promise<WithKey<EventRecord>[]> =>
