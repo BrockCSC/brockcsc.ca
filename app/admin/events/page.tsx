@@ -6,7 +6,7 @@ import EventModal from "./eventsModel";
 import { useEffect, useMemo, useState } from "react";
 import { EventRecord, fetchAllEvents, WithKey } from "@/lib/firebase";
 import { classifyEventsByTiming } from "@/lib/events/classify";
-import { getRecurringScheduleText, getEventTiming, formatEventDateLabel, formatEventTimeLabel, formatNextOccurrenceDate } from "@/lib/events/schedule";
+import { getEventTiming, formatEventTimeLabel, formatNextOccurrenceDate } from "@/lib/events/schedule";
 import { deleteEvent } from "@/lib/firebase/realtime";
 
 export default function EventsManagementPage() {
