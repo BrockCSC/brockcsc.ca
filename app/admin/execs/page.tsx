@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { ExecRecord, fetchCurrentExecs, fetchPreviousExecs, WithKey } from "@/lib/firebase";
+import { deleteExec, ExecRecord, fetchCurrentExecs, fetchPreviousExecs, WithKey } from "@/lib/firebase";
 import ExecModal from "./execModel";
 
 type TeamMember = WithKey<ExecRecord>;
@@ -96,7 +96,7 @@ export default function ExecutivesManagementPage() {
 							<TableRow>
 								<TableHead>Name</TableHead>
 								<TableHead>Role</TableHead>
-								<TableHead>Edit</TableHead>
+								<TableHead className="text-center">Action</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -104,8 +104,9 @@ export default function ExecutivesManagementPage() {
 								<TableRow key={idx}>
 									<TableCell>{exec.name}</TableCell>
 									<TableCell>{exec.title}</TableCell>
-									<TableCell>
+									<TableCell className="flex justify-around">
 										<Button variant="link" size="sm" onClick={() => { setSelectedExec(exec); setShowModal(true); }}>EDIT</Button>
+										<Button variant="link" className="text-red-600" size="sm" onClick={() => { deleteExec(exec.$key); loadTeam() }}>Delete</Button>
 									</TableCell>
 								</TableRow>
 							))}
@@ -129,7 +130,7 @@ export default function ExecutivesManagementPage() {
 									<TableRow>
 										<TableHead>Name</TableHead>
 										<TableHead>Role</TableHead>
-										<TableHead>Edit</TableHead>
+										<TableHead className="text-center">Action</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -137,8 +138,9 @@ export default function ExecutivesManagementPage() {
 										<TableRow key={idx}>
 											<TableCell>{exec.name}</TableCell>
 											<TableCell>{exec.title}</TableCell>
-											<TableCell>
+											<TableCell className="flex justify-around">
 												<Button variant="link" size="sm" onClick={() => { setSelectedExec(exec); setShowModal(true); }}>EDIT</Button>
+												<Button variant="link" className="text-red-600" size="sm" onClick={() => { deleteExec(exec.$key); loadTeam() }}>Delete</Button>
 											</TableCell>
 										</TableRow>
 									))}
