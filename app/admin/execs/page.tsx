@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { deleteExec, ExecRecord, fetchCurrentExecs, fetchPreviousExecs, WithKey } from "@/lib/firebase";
 import ExecModal from "./execModel";
+import { ConfirmationModal } from "@/components/ui/modal";
 
 type TeamMember = WithKey<ExecRecord>;
 
@@ -47,6 +48,8 @@ export default function ExecutivesManagementPage() {
 	  const [showModal, setShowModal] = useState(false);
 	  const [selectedExec, setSelectedExec] = useState<TeamMember | null>(null);
 	  const [showPast, setShowPast] = useState(false);
+	  const [openConfirmationModel, setOpenConfirmationModel] = useState(false);
+
 	
 	  const loadTeam = async (active = true) => {
 		try {
@@ -106,7 +109,7 @@ export default function ExecutivesManagementPage() {
 									<TableCell>{exec.title}</TableCell>
 									<TableCell className="flex justify-around">
 										<Button variant="link" size="sm" onClick={() => { setSelectedExec(exec); setShowModal(true); }}>EDIT</Button>
-										<Button variant="link" className="text-red-600" size="sm" onClick={() => { deleteExec(exec.$key); loadTeam() }}>Delete</Button>
+										<Button variant="link" className="text-red-600" size="sm" onClick={() => { setSelectedExec(exec); setOpenConfirmationModel(true); }}>Delete</Button>
 									</TableCell>
 								</TableRow>
 							))}
@@ -140,7 +143,7 @@ export default function ExecutivesManagementPage() {
 											<TableCell>{exec.title}</TableCell>
 											<TableCell className="flex justify-around">
 												<Button variant="link" size="sm" onClick={() => { setSelectedExec(exec); setShowModal(true); }}>EDIT</Button>
-												<Button variant="link" className="text-red-600" size="sm" onClick={() => { deleteExec(exec.$key); loadTeam() }}>Delete</Button>
+												<Button variant="link" className="text-red-600" size="sm" onClick={() => { setSelectedExec(exec); setOpenConfirmationModel(true); }}>Delete</Button>
 											</TableCell>
 										</TableRow>
 									))}
@@ -151,6 +154,23 @@ export default function ExecutivesManagementPage() {
 					)}
 				</div>
 			</div>
+
+			{/* Confirmation modal for deleting an executive member */}
+			{openConfirmationModel && 
+				<ConfirmationModal 
+					open={openConfirmationModel}
+					title="Confirm Deletion" 
+					message="Are you sure you want to delete this executive? This action cannot be undone." 
+					onConfirm={async () => {
+					if (!selectedExec?.$key) return;
+					await deleteExec(selectedExec.$key);
+					loadTeam();
+					}}					
+					onClose={() => setOpenConfirmationModel(false)} 
+				/>
+			}
+
+			{/* Modal for adding/editing executives */}
 			{showModal && <ExecModal showModal={showModal} setShowModal={setShowModal} selectedExec={selectedExec} onSave={() => void loadTeam()} />}
 		</>
 	);
