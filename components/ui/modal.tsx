@@ -1,3 +1,5 @@
+import { Button } from "./button";
+
 export default function Modal({ open, onClose, title, children }: {
   open: boolean;
   onClose: () => void;
@@ -21,5 +23,36 @@ export default function Modal({ open, onClose, title, children }: {
         <>{children}</>
       </div>
     </div>
+  );
+}
+
+export function ConfirmationModal({ open, onClose, title, message, onConfirm }: {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  message: string;
+  onConfirm: () => Promise<void> | void;
+}) {
+  return (
+    <Modal open={open} onClose={onClose} title={title}>
+      <p className="mb-6 mt-[-15px]">{message}</p>
+      <div className="flex justify-end gap-4">
+        <Button
+          onClick={() => onClose()}
+          variant={"secondary"}
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={async () => {
+            await onConfirm();
+            onClose();
+          }}
+          variant={"destructive"}
+        >
+          Confirm
+        </Button>
+      </div>
+    </Modal>
   );
 }
