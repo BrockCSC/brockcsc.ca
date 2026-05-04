@@ -8,6 +8,7 @@ import { EventRecord, fetchAllEvents, WithKey } from "@/lib/firebase";
 import { classifyEventsByTiming } from "@/lib/events/classify";
 import { getEventTiming, formatEventTimeLabel, formatNextOccurrenceDate } from "@/lib/events/schedule";
 import { deleteEvent } from "@/lib/firebase/realtime";
+import { ConfirmationModal } from "@/components/ui/modal";
 
 export default function EventsManagementPage() {
 	type EventItem = WithKey<EventRecord>;
@@ -15,6 +16,8 @@ export default function EventsManagementPage() {
 	const [showModal, setShowModal] = useState(false);
 	const [showPastEvents, setShowPastEvents] = useState(false);
 	const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
+	const [openConfirmationModel, setOpenConfirmationModel] = useState(false);
+
 
 	const [events, setEvents] = useState<EventItem[]>([]);
 	const nowTimestamp = Date.now();
@@ -102,7 +105,7 @@ export default function EventsManagementPage() {
 								<TableCell className="max-w-[10rem] truncate">{event.location}</TableCell>
 								<TableCell className="flex justify-around gap-[15px]]">
 									<Button variant="link" size="sm" onClick={() => { setSelectedEvent(event.rawEvent); setShowModal(true); }}>EDIT</Button>
-									<Button variant="link" className="text-red-600" size="sm" onClick={async () => { await deleteEvent(event.id); load(); }}>Delete</Button>
+									<Button variant="link" className="text-red-600" size="sm" onClick={async () => { setSelectedEvent(event.rawEvent); setOpenConfirmationModel(true); }}>Delete</Button>
 								</TableCell>
 							</TableRow>
 						))}
@@ -135,7 +138,7 @@ export default function EventsManagementPage() {
 								<TableCell className="max-w-[10rem] truncate">{event.location}</TableCell>
 								<TableCell className="flex justify-around gap-[15px]]">
 									<Button variant="link" size="sm" onClick={() => { setSelectedEvent(event.rawEvent); setShowModal(true); }}>EDIT</Button>
-									<Button variant="link" className="text-red-600" size="sm" onClick={async () => { await deleteEvent(event.id); load(); }}>Delete</Button>
+									<Button variant="link" className="text-red-600" size="sm" onClick={async () => { setSelectedEvent(event.rawEvent); setOpenConfirmationModel(true); }}>Delete</Button>
 								</TableCell>
 							</TableRow>
 						)})}
@@ -171,7 +174,7 @@ export default function EventsManagementPage() {
 									<TableCell className="max-w-[10rem] truncate">{event.location}</TableCell>
 									<TableCell className="flex justify-around gap-[15px]]">
 										<Button variant="link" size="sm" onClick={() => { setSelectedEvent(event.rawEvent); setShowModal(true); }}>EDIT</Button>
-										<Button variant="link" className="text-red-600" size="sm" onClick={async () => { await deleteEvent(event.id); load(); }}>Delete</Button>
+										<Button variant="link" className="text-red-600" size="sm" onClick={() => { setSelectedEvent(event.rawEvent); setOpenConfirmationModel(true); }}>Delete</Button>
 									</TableCell>
 								</TableRow>
 							))}
@@ -179,6 +182,23 @@ export default function EventsManagementPage() {
 					</Table>
 				)}
 			</div>
+
+			{/* Confirmation modal for deleting an event */}
+						{openConfirmationModel && 
+							<ConfirmationModal 
+								open={openConfirmationModel}
+								title="Confirm Deletion" 
+								message="Are you sure you want to delete this event? This action cannot be undone." 
+								onConfirm={async () => {
+								if (!selectedEvent?.$key) return;
+								await deleteEvent(selectedEvent.$key);
+								load();
+								}}					
+								onClose={() => setOpenConfirmationModel(false)} 
+							/>
+						}
+
+			{/* Modal for adding/editing events */}
 			{showModal && <EventModal showModal={showModal} setShowModal={setShowModal} variant={selectedEvent ? "edit" : "create"} selectedEvent={selectedEvent} onSave={() => void load()} />}
 		</div>
 	);
