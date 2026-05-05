@@ -7,7 +7,6 @@ import { deleteExec, ExecRecord, fetchCurrentExecs, fetchPreviousExecs, WithKey 
 import ExecModal from "./execModel";
 import { ConfirmationModal } from "@/components/ui/modal";
 import { AdminTable, ColumnDef } from "@/components/ui/admin-table";
-import { exec } from "child_process";
 
 type TeamMember = WithKey<ExecRecord>;
 
