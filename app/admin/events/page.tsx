@@ -9,6 +9,7 @@ import { classifyEventsByTiming } from "@/lib/events/classify";
 import { getEventTiming, formatEventTimeLabel, formatNextOccurrenceDate } from "@/lib/events/schedule";
 import { deleteEvent } from "@/lib/firebase/realtime";
 import { ConfirmationModal } from "@/components/ui/modal";
+import { AdminTable, ColumnDef } from "@/components/ui/admin-table";
 
 export default function EventsManagementPage() {
 	type EventItem = WithKey<EventRecord>;
@@ -21,6 +22,38 @@ export default function EventsManagementPage() {
 
 	const [events, setEvents] = useState<EventItem[]>([]);
 	const nowTimestamp = Date.now();
+
+	// Define shared Actions column
+	const actionsColumn: ColumnDef<typeof upcomingEvents[0]> = {
+		header: "Actions",
+		headerClassName: "text-center",
+		cellClassName: "flex justify-around gap-[15px]",
+		cell: (event) => (
+			<>
+			<Button variant="link" size="sm" onClick={() => { setSelectedEvent(event.rawEvent); setShowModal(true); }}>EDIT</Button>
+			<Button variant="link" className="text-red-600" size="sm" onClick={() => { setSelectedEvent(event.rawEvent); setOpenConfirmationModel(true); }}>Delete</Button>
+			</>
+		),
+	};
+
+	// Define standard event columns (used for Upcoming & Past)
+	const standardColumns: ColumnDef<typeof upcomingEvents[0]>[] = [
+		{ header: "Event Title", accessorKey: "title", cellClassName: "max-w-[12rem] truncate" },
+		{ header: "Date", accessorKey: "date" },
+		{ header: "Time", accessorKey: "time" },
+		{ header: "Location", accessorKey: "location", cellClassName: "max-w-[10rem] truncate" },
+		actionsColumn,
+	];
+
+	// Define Recurring specific columns
+	const recurringColumns: ColumnDef<typeof recurringEvents[0]>[] = [
+		{ header: "Event Title", accessorKey: "title", cellClassName: "max-w-[12rem] truncate" },
+		{ header: "Recurrence", cell: (e) => e.rawEvent.schedule?.recurrence?.unit },
+		{ header: "Next Occurrence", cell: (e) => formatNextOccurrenceDate(getEventTiming(e.rawEvent, nowTimestamp).nextStartTimestamp) },
+		{ header: "Time", cell: (e) => formatEventTimeLabel(e.rawEvent, getEventTiming(e.rawEvent, nowTimestamp).nextStartTimestamp) },
+		{ header: "Location", accessorKey: "location", cellClassName: "max-w-[10rem] truncate" },
+		actionsColumn,
+	];
 
 	const load = async (active = true) => {
 		try {
@@ -84,68 +117,18 @@ export default function EventsManagementPage() {
 				<Button variant="primary" onClick={() => { setSelectedEvent(null); setShowModal(true); }}>+ New Event</Button>
 			</div>
 
+			{/* Upcoming Events */}
 			<div className="mb-10">
 				<h2 className="text-xl font-bold mb-4">Upcoming Events</h2>
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead>Event Title</TableHead>
-							<TableHead>Date</TableHead>
-							<TableHead>Time</TableHead>
-							<TableHead>Location</TableHead>
-							<TableHead className="text-center">Actions</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{upcomingEvents.map((event) => (
-							<TableRow key={event.id}>
-								<TableCell className="max-w-[12rem] truncate">{event.title}</TableCell>
-								<TableCell>{event.date}</TableCell>
-								<TableCell>{event.time}</TableCell>
-								<TableCell className="max-w-[10rem] truncate">{event.location}</TableCell>
-								<TableCell className="flex justify-around gap-[15px]]">
-									<Button variant="link" size="sm" onClick={() => { setSelectedEvent(event.rawEvent); setShowModal(true); }}>EDIT</Button>
-									<Button variant="link" className="text-red-600" size="sm" onClick={async () => { setSelectedEvent(event.rawEvent); setOpenConfirmationModel(true); }}>Delete</Button>
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
+				<AdminTable columns={standardColumns} data={upcomingEvents} keyExtractor={(e) => e.id} />
 			</div>
 
+			{/* Recurring Events */}
 			<div className="mb-10">
 				<h2 className="text-xl font-bold mb-4">Recurring Events</h2>
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead>Event Title</TableHead>
-							<TableHead>Recurrence</TableHead>
-							<TableHead>Next Occurrence</TableHead>
-							<TableHead>Time</TableHead>
-							<TableHead>Location</TableHead>
-							<TableHead className="text-center">Actions</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{recurringEvents.map((event) => {
-							const nextStartTimestamp = getEventTiming(event.rawEvent, nowTimestamp).nextStartTimestamp;
-							return (
-							<TableRow key={event.id}>
-								<TableCell className="max-w-[12rem] truncate">{event.title}</TableCell>
-								<TableCell>{event.rawEvent.schedule?.recurrence?.unit}</TableCell>
-								<TableCell>{formatNextOccurrenceDate(nextStartTimestamp)}</TableCell>
-								<TableCell>{formatEventTimeLabel(event.rawEvent, nextStartTimestamp)}</TableCell>
-								<TableCell className="max-w-[10rem] truncate">{event.location}</TableCell>
-								<TableCell className="flex justify-around gap-[15px]]">
-									<Button variant="link" size="sm" onClick={() => { setSelectedEvent(event.rawEvent); setShowModal(true); }}>EDIT</Button>
-									<Button variant="link" className="text-red-600" size="sm" onClick={async () => { setSelectedEvent(event.rawEvent); setOpenConfirmationModel(true); }}>Delete</Button>
-								</TableCell>
-							</TableRow>
-						)})}
-					</TableBody>
-				</Table>
+				<AdminTable columns={recurringColumns} data={recurringEvents} keyExtractor={(e) => e.id} />
 			</div>
-
+			
 			<div className="mb-10 border-t-2 border-black pt-6">
 				<button 
 					className="flex items-center gap-2 text-xl font-bold mb-4 hover:opacity-80 transition-opacity"
@@ -155,31 +138,10 @@ export default function EventsManagementPage() {
 				</button>
 				
 				{showPastEvents && (
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Event Title</TableHead>
-								<TableHead>Date</TableHead>
-								<TableHead>Time</TableHead>
-								<TableHead>Location</TableHead>
-								<TableHead className="text-center">Actions</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{pastEvents.map((event) => (
-								<TableRow key={event.id}>
-									<TableCell className="max-w-[12rem] truncate">{event.title}</TableCell>
-									<TableCell>{event.date}</TableCell>
-									<TableCell>{event.time}</TableCell>
-									<TableCell className="max-w-[10rem] truncate">{event.location}</TableCell>
-									<TableCell className="flex justify-around gap-[15px]]">
-										<Button variant="link" size="sm" onClick={() => { setSelectedEvent(event.rawEvent); setShowModal(true); }}>EDIT</Button>
-										<Button variant="link" className="text-red-600" size="sm" onClick={() => { setSelectedEvent(event.rawEvent); setOpenConfirmationModel(true); }}>Delete</Button>
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
+					<div className="mb-10">
+						<h2 className="text-xl font-bold mb-4">Past Events</h2>
+						<AdminTable columns={standardColumns} data={pastEvents} keyExtractor={(e) => e.id} />
+					</div>
 				)}
 			</div>
 
