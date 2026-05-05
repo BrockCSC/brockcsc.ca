@@ -1,5 +1,5 @@
 import React from "react"
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table"
+import { Table } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import  Sidebar  from "@/components/ui/Sidebar"
