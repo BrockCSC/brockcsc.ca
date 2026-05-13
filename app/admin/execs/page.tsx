@@ -2,10 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { deleteExec, ExecRecord, fetchCurrentExecs, fetchPreviousExecs, WithKey } from "@/lib/firebase";
 import ExecModal from "./execModel";
 import { ConfirmationModal } from "@/components/ui/modal";
+import { AdminTable, ColumnDef } from "@/components/ui/admin-table";
 
 type TeamMember = WithKey<ExecRecord>;
 
@@ -49,6 +49,25 @@ export default function ExecutivesManagementPage() {
 	  const [selectedExec, setSelectedExec] = useState<TeamMember | null>(null);
 	  const [showPast, setShowPast] = useState(false);
 	  const [openConfirmationModel, setOpenConfirmationModel] = useState(false);
+
+		// Define shared Actions column
+		const actionsColumn: ColumnDef<typeof currentExecs[0]> = {
+			header: "Actions",
+			headerClassName: "text-center",
+			cellClassName: "flex justify-around gap-[15px]",
+			cell: (event) => (
+				<>
+					<Button variant="link" size="sm" onClick={() => { setSelectedExec(event); setShowModal(true); }}>EDIT</Button>
+					<Button variant="link" className="text-red-600" size="sm" onClick={() => { setSelectedExec(event); setOpenConfirmationModel(true); }}>Delete</Button>
+				</>
+			),
+		};
+
+		const standardColumns: ColumnDef<typeof currentExecs[0]>[] = [
+			{ header: "Name", accessorKey: "name", cellClassName: "max-w-[12rem] truncate" },
+			{ header: "Role", accessorKey: "title" },
+			actionsColumn,
+		];
 
 	
 	  const loadTeam = async (active = true) => {
@@ -94,27 +113,7 @@ export default function ExecutivesManagementPage() {
 
 				<div className="mb-10">
 					<h2 className="text-lg font-bold mb-4">Current Executive</h2>
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Name</TableHead>
-								<TableHead>Role</TableHead>
-								<TableHead className="text-center">Action</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{currentExecs.map((exec, idx) => (
-								<TableRow key={idx}>
-									<TableCell>{exec.name}</TableCell>
-									<TableCell>{exec.title}</TableCell>
-									<TableCell className="flex justify-around">
-										<Button variant="link" size="sm" onClick={() => { setSelectedExec(exec); setShowModal(true); }}>EDIT</Button>
-										<Button variant="link" className="text-red-600" size="sm" onClick={() => { setSelectedExec(exec); setOpenConfirmationModel(true); }}>Delete</Button>
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
+					<AdminTable columns={standardColumns} data={currentExecs} keyExtractor={(e) => e.$key} />
 					<div className="mt-2 text-right text-xs text-neutral-500 font-semibold">{currentExecs.length} active members</div>
 				</div>
 
@@ -128,27 +127,7 @@ export default function ExecutivesManagementPage() {
 					{showPast && (
 						<div className="mt-4">
 							<h2 className="text-lg font-bold mb-4">Past Executives</h2>
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>Name</TableHead>
-										<TableHead>Role</TableHead>
-										<TableHead className="text-center">Action</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{previousExecs.map((exec, idx) => (
-										<TableRow key={idx}>
-											<TableCell>{exec.name}</TableCell>
-											<TableCell>{exec.title}</TableCell>
-											<TableCell className="flex justify-around">
-												<Button variant="link" size="sm" onClick={() => { setSelectedExec(exec); setShowModal(true); }}>EDIT</Button>
-												<Button variant="link" className="text-red-600" size="sm" onClick={() => { setSelectedExec(exec); setOpenConfirmationModel(true); }}>Delete</Button>
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
+							<AdminTable columns={standardColumns} data={previousExecs} keyExtractor={(e) => e.$key} />
 							<div className="mt-2 text-right text-xs text-neutral-500 font-semibold">{previousExecs.length} past members</div>
 						</div>
 					)}
