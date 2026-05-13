@@ -33,7 +33,11 @@ export function AdminTable<T>({ columns, data, keyExtractor }: AdminTableProps<T
           <TableRow key={keyExtractor(item)}>
             {columns.map((col, idx) => (
               <TableCell key={idx} className={col.cellClassName}>
-                {col.cell ? col.cell(item) : col.accessorKey ? String(item[col.accessorKey]) : null}
+                {col.cell
+                  ? col.cell(item) 
+                  : col.accessorKey && item[col.accessorKey] != null 
+                    ? String(item[col.accessorKey]) 
+                    : ""}
               </TableCell>
             ))}
           </TableRow>
