@@ -1,8 +1,8 @@
 "use client";
 
 import { getFirebaseClient } from "@/lib/firebase";
-import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup } from "firebase/auth";
-import { useEffect, useState } from "react";
+import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
+import { useEffect, useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 
@@ -17,11 +17,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
+  const isLoggingOut = useRef(false);
 
   // Authentication logic: Redirect to login if not authenticated, otherwise show admin layout
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
+        if (isLoggingOut.current) return;
+        
         try {
           const provider = new GoogleAuthProvider();
           await signInWithPopup(auth, provider);
@@ -35,6 +38,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     });
     return () => unsubscribe();
   }, [auth, router]);
+
+  const handleLogout = async () => {
+    try {
+      isLoggingOut.current = true;
+      await signOut(auth);
+      router.push("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      isLoggingOut.current = false;
+    }
+  };
 
   if (loading) {
     return <div className="py-32 text-center text-lg font-bold">Authenticating...</div>;
@@ -65,8 +79,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             })}
           </nav>
           <div className="flex items-center gap-3">
-            {/* TODO: Add signout button */}
-            {/* Optionally add sign out button here */}
+            <button
+              onClick={handleLogout}
+              className="relative text-gray-500 font-bold px-4 py-2 hover:text-black transition-colors after:content-[''] after:absolute after:bottom-1 after:left-0 after:w-full after:h-[2px] after:bg-[#9A4440] after:origin-center after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100"
+            >
+              Logout
+            </button>
           </div>
         </div>
         <div className="p-8">
