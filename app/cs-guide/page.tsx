@@ -9,7 +9,7 @@ import courses from "@/data/courses.json"
 
 const Guide: React.FC = () => {
     return (
-        <main className="bg-[#f6f6f6] min-h-screen py-16">
+        <main className="min-h-screen py-16">
             <div className="max-w-6xl mx-auto flex gap-16 px-6">
 
                 {/* LEFT SIDEBAR */}
@@ -50,7 +50,7 @@ const Guide: React.FC = () => {
                             Start by checking the course requirements in the{" "}
                             <a
                                 className="underline text-red-800 hover:decoration-2"
-                                href="https://brocku.ca/webcal/2024/undergrad/cosc.html"
+                                href="https://calendar.brocku.ca/"
                             >
                                 undergraduate calendar
                             </a>. Familiarise yourself with the page,
@@ -256,7 +256,7 @@ const Guide: React.FC = () => {
 
                         <div className="mt-6 border border-yellow-400 bg-yellow-50 rounded-xl px-6 py-4 text-sm text-yellow-800 mb-8">
                             ⚠ Note:  These requirements are subject to change. If you're in a specialized major then this
-                            could be different for you. Use this chart in tandem with the <a className="underline text-red-800 hover:decoration-2" href="https://brocku.ca/webcal/current/undergrad/cosc.html">course calendar</a> to achieve your degree requirements.
+                            could be different for you. Use this chart in tandem with the <a className="underline text-red-800 hover:decoration-2" href="https://calendar.brocku.ca/">course calendar</a> to achieve your degree requirements.
                         </div>
 
                     </section>
@@ -299,7 +299,7 @@ const Guide: React.FC = () => {
                             to your resume. A popular pathway is the Computing and Business degree, however you can
                             pair computer science with most programs in sciences, humanities, social sciences, and arts. <br></br><br></br>
 
-                            <Link className="underline text-red-800 hover:decoration-2" href="https://brocku.ca/guides-and-timetables/timetables/?session=fw&type=ug&level=all%5D(https://brocku.ca/webcal/2024/undergrad/cosc.html#sec18)">Double Major info</Link> <br></br>
+                            <Link className="underline text-red-800 hover:decoration-2" href="https://calendar.brocku.ca/preview_program.php?catoid=23&poid=10350">Double Major info</Link> <br></br>
 
                                 <a className="underline text-red-800 hover:decoration-2" href="https://brocku.ca/programs/undergraduate/computing-and-business/">Computing and Business</a> <br></br>
                         </div>

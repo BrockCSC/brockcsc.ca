@@ -68,11 +68,13 @@ export default function Sidebar() {
   return (
     <>
       {/* 1. Hamburger Button (Visible on mobile/tablet, hidden on desktop) */}
-      <button 
-        onClick={toggleMenu}
-        className="lg:hidden fixed top-4 right-4 z-50 p-2 bg-white border-2 border-black shadow-[3px_3px_0_#000] rounded-xl"
+      <button
+      onClick={toggleMenu}
+      className={`lg:hidden fixed right-4 z-50 p-2 bg-white border-2 border-black shadow-[3px_3px_0_#000] rounded-xl ${
+        isOpen ? 'top-5' : 'top-25'
+      }`}
       >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
+      {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       {/* 2. Sidebar Container */}
