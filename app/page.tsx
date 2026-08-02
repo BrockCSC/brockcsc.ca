@@ -42,7 +42,7 @@ export default function Home() {
           </div>
 
           <div className="relative w-full aspect-square md:aspect-[4/3] max-w-lg mx-auto lg:ml-auto">
-            <PhotoFrame className="w-full h-full" />
+            <PhotoFrame src="./hero_image.jpg" className="w-full h-full" />
             <MemberBadge 
               count="900+" 
               className="absolute -bottom-6 -right-2 md:-right-8 z-20" 
