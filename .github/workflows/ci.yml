@@ -1,8 +1,80 @@
 name: CI
 
+# Only `push` (not `pull_request`) - GitHub matches check runs to a PR by
+# commit SHA regardless of which event triggered them, so a push-triggered
+# run still shows up on the PR. Adding `pull_request` back would just run
+# `checks` twice per commit. This assumes branches are pushed to this repo
+# directly (not forks) - true for this project today.
 on:
-  pull_request:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   checks:
-    uses: ./.github/workflows/checks.yml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run format:check
+
+  context:
+    needs: checks
+    runs-on: ubuntu-latest
+    outputs:
+      env_name: ${{ steps.ctx.outputs.env_name }}
+      url: ${{ steps.ctx.outputs.url }}
+    steps:
+      - id: ctx
+        run: |
+          # Display-only: the canonical env_name/subdomain/branch/schema
+          # computation lives in komodo/actions/deploy.ts, which is the
+          # source of truth. This just derives what to show in the GitHub
+          # Environment / deployment URL, using the same slug rule -
+          # keep in sync with slugify() in komodo/actions/deploy.ts.
+          VPS_HOST="129-153-49-190.sslip.io"
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "env_name=production" >> "$GITHUB_OUTPUT"
+            echo "url=https://brockcsc.$VPS_HOST" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "env_name=uat" >> "$GITHUB_OUTPUT"
+            echo "url=https://uat.$VPS_HOST" >> "$GITHUB_OUTPUT"
+          else
+            SLUG=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g' | cut -c1-40)
+            echo "env_name=dev" >> "$GITHUB_OUTPUT"
+            echo "url=https://$SLUG.$VPS_HOST" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: context
+    runs-on: ubuntu-latest
+    # dev/uat/production each require reviewers in repo settings - the job
+    # waits here until someone approves. See README.md "One-time Komodo setup".
+    environment:
+      name: ${{ needs.context.outputs.env_name }}
+      url: ${{ needs.context.outputs.url }}
+    steps:
+      - name: Trigger Komodo deploy
+        env:
+          KOMODO_HOST: ${{ vars.KOMODO_HOST }}
+          KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
+          KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
+        run: |
+          curl -sf -X POST "$KOMODO_HOST/execute" \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: $KOMODO_API_KEY" \
+            -H "x-api-secret: $KOMODO_API_SECRET" \
+            -d "$(jq -n \
+                  --arg ref "${{ github.ref }}" \
+                  --arg sha "${{ github.sha }}" \
+                  '{type:"RunAction", params:{action:"brockcsc-deploy", arguments: ("REF=" + $ref + "\nSHA=" + $sha)}}')"
