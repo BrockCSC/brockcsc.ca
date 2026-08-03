@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import type { SessionUser } from "../domain/session-user.js";
 
 const {
   KEYCLOAK_ISSUER,
@@ -17,12 +18,6 @@ for (const [name, value] of Object.entries({
 })) {
   if (!value) throw new Error(`${name} env var is not set.`);
 }
-
-export type SessionUser = {
-  sub: string;
-  email: string;
-  name: string;
-};
 
 const SESSION_COOKIE = "brockcsc_session";
 const cookieBase = {
