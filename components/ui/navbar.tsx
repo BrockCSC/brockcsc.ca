@@ -16,7 +16,6 @@ export function Navbar() {
     { name: "Team", href: "/team" },
     { name: "Events", href: "/events" },
     { name: "CS Guide", href: "/cs-guide" },
-    { name: "Merch", href: "/merch" },
   ];
 
   return (
