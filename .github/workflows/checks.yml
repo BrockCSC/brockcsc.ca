@@ -4,7 +4,7 @@ on:
   workflow_call:
 
 jobs:
-  web:
+  checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,18 +17,12 @@ jobs:
       - run: npm run typecheck
       - run: npm run format:check
 
-  api:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: api/package-lock.json
-      - working-directory: api
+          cache-dependency-path: .github/scripts/package-lock.json
+      - working-directory: .github/scripts
         run: npm ci
-      - working-directory: api
-        run: npm run lint
-      - working-directory: api
+      - working-directory: .github/scripts
         run: npm run typecheck

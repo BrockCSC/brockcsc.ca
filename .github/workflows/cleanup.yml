@@ -15,32 +15,27 @@ jobs:
       - uses: actions/checkout@v4
 
       - id: ctx
-        run: |
-          set -euo pipefail
-          SLUG=$(./deploy/slugify.sh "${{ github.event.ref }}")
-          echo "project_name=brockcsc-pr-${SLUG}" >> "$GITHUB_OUTPUT"
-          echo "db_name=brockcsc_preview_${SLUG//-/_}" >> "$GITHUB_OUTPUT"
+        uses: ./.github/actions/compute-context
+        with:
+          branch: ${{ github.event.ref }}
 
       - name: Delete Komodo stack
+        working-directory: .github/scripts
         env:
           KOMODO_HOST: ${{ secrets.KOMODO_HOST }}
           KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
           KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
           PROJECT_NAME: ${{ steps.ctx.outputs.project_name }}
-        run: ./deploy/komodo-delete.sh
+        run: npx tsx src/komodo-delete.ts
 
-      - name: Drop preview database
+      - name: Drop preview schema
+        working-directory: .github/scripts
         env:
           SSH_KEY: ${{ secrets.BROCKCSC_DEPLOY_SSH_KEY }}
           DEPLOY_HOST: ${{ secrets.BROCKCSC_DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.BROCKCSC_DEPLOY_USER }}
-          DB_NAME: ${{ steps.ctx.outputs.db_name }}
-        run: |
-          set -euo pipefail
-          install -m 600 /dev/null /tmp/deploy_key
-          echo "$SSH_KEY" > /tmp/deploy_key
-          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=accept-new \
-            "${DEPLOY_USER}@${DEPLOY_HOST}" "drop-db ${DB_NAME}"
+          DB_SCHEMA: ${{ steps.ctx.outputs.db_schema }}
+        run: npx tsx src/drop-preview-schema.ts
 
   stale-sweep:
     if: github.event_name == 'schedule'
@@ -48,7 +43,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: .github/scripts/package-lock.json
+      - working-directory: .github/scripts
+        run: npm ci
+
       - name: Sweep stale preview deployments
+        working-directory: .github/scripts
         env:
           KOMODO_HOST: ${{ secrets.KOMODO_HOST }}
           KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
@@ -58,4 +62,4 @@ jobs:
           BROCKCSC_DEPLOY_SSH_KEY: ${{ secrets.BROCKCSC_DEPLOY_SSH_KEY }}
           BROCKCSC_DEPLOY_HOST: ${{ secrets.BROCKCSC_DEPLOY_HOST }}
           BROCKCSC_DEPLOY_USER: ${{ secrets.BROCKCSC_DEPLOY_USER }}
-        run: ./deploy/cleanup-stale.sh
+        run: npx tsx src/cleanup-stale.ts

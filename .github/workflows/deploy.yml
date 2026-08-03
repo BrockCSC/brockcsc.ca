@@ -17,49 +17,12 @@ jobs:
       env_name: ${{ steps.ctx.outputs.env_name }}
       project_name: ${{ steps.ctx.outputs.project_name }}
       subdomain: ${{ steps.ctx.outputs.subdomain }}
-      db_name: ${{ steps.ctx.outputs.db_name }}
+      db_schema: ${{ steps.ctx.outputs.db_schema }}
       git_branch: ${{ steps.ctx.outputs.git_branch }}
     steps:
       - uses: actions/checkout@v4
-
       - id: ctx
-        run: |
-          set -euo pipefail
-          VPS_HOST="129-153-49-190.sslip.io"
-          SHA_SHORT="${GITHUB_SHA:0:12}"
-
-          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            TAG_NAME="${GITHUB_REF#refs/tags/}"
-            IMAGE_TAG="tag-${TAG_NAME}"
-            ENV_NAME="prod"
-            PROJECT_NAME="brockcsc-prod"
-            SUBDOMAIN="brockcsc.${VPS_HOST}"
-            DB_NAME="brockcsc_prod"
-            GIT_BRANCH="${TAG_NAME}"
-          elif [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            IMAGE_TAG="main-${SHA_SHORT}"
-            ENV_NAME="dev"
-            PROJECT_NAME="brockcsc-dev"
-            SUBDOMAIN="dev.${VPS_HOST}"
-            DB_NAME="brockcsc_dev"
-            GIT_BRANCH="main"
-          else
-            BRANCH="${GITHUB_REF#refs/heads/}"
-            SLUG=$(./deploy/slugify.sh "$BRANCH")
-            IMAGE_TAG="pr-${SLUG}-${SHA_SHORT}"
-            ENV_NAME="preview"
-            PROJECT_NAME="brockcsc-pr-${SLUG}"
-            SUBDOMAIN="${SLUG}.${VPS_HOST}"
-            DB_NAME="brockcsc_preview_${SLUG//-/_}"
-            GIT_BRANCH="${BRANCH}"
-          fi
-
-          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
-          echo "env_name=${ENV_NAME}" >> "$GITHUB_OUTPUT"
-          echo "project_name=${PROJECT_NAME}" >> "$GITHUB_OUTPUT"
-          echo "subdomain=${SUBDOMAIN}" >> "$GITHUB_OUTPUT"
-          echo "db_name=${DB_NAME}" >> "$GITHUB_OUTPUT"
-          echo "git_branch=${GIT_BRANCH}" >> "$GITHUB_OUTPUT"
+        uses: ./.github/actions/compute-context
 
   checks:
     needs: context
@@ -87,8 +50,8 @@ jobs:
       - name: Build + push web image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: Dockerfile
+          context: ./apps/web
+          file: ./apps/web/Dockerfile
           push: true
           build-args: |
             NEXT_PUBLIC_BASE_URL=https://${{ needs.context.outputs.subdomain }}
@@ -99,8 +62,8 @@ jobs:
       - name: Build + push api image
         uses: docker/build-push-action@v6
         with:
-          context: ./api
-          file: ./api/Dockerfile
+          context: ./apps/api
+          file: ./apps/api/Dockerfile
           push: true
           tags: ghcr.io/brockcsc/brockcsc-ca-api:${{ needs.context.outputs.image_tag }}
           cache-from: type=gha,scope=api
@@ -114,11 +77,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  deploy-prod:
+  deploy:
     needs: [context, build]
-    if: needs.context.outputs.env_name == 'prod'
     runs-on: ubuntu-latest
-    environment: production
+    # Only prod is gated behind the required-reviewer protection rule
+    # configured on the "production" GitHub Environment; dev/preview resolve
+    # to their own (unprotected, auto-created) environment names.
+    environment: ${{ needs.context.outputs.env_name == 'prod' && 'production' || needs.context.outputs.env_name }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/deploy-stack
@@ -127,66 +92,11 @@ jobs:
           image_tag: ${{ needs.context.outputs.image_tag }}
           subdomain: ${{ needs.context.outputs.subdomain }}
           git_branch: ${{ needs.context.outputs.git_branch }}
-          db_name: ${{ needs.context.outputs.db_name }}
+          db_schema: ${{ needs.context.outputs.db_schema }}
           env_name: ${{ needs.context.outputs.env_name }}
           komodo_host: ${{ secrets.KOMODO_HOST }}
           komodo_api_key: ${{ secrets.KOMODO_API_KEY }}
           komodo_api_secret: ${{ secrets.KOMODO_API_SECRET }}
-          deploy_ssh_key: ${{ secrets.BROCKCSC_DEPLOY_SSH_KEY }}
-          deploy_host: ${{ secrets.BROCKCSC_DEPLOY_HOST }}
-          deploy_user: ${{ secrets.BROCKCSC_DEPLOY_USER }}
-          db_password: ${{ secrets.BROCKCSC_DB_PASSWORD }}
-          keycloak_issuer: ${{ secrets.BROCKCSC_KEYCLOAK_ISSUER }}
-          keycloak_client_id: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_ID }}
-          keycloak_client_secret: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_SECRET }}
-          session_jwt_secret: ${{ secrets.BROCKCSC_SESSION_JWT_SECRET }}
-
-  deploy-dev:
-    needs: [context, build]
-    if: needs.context.outputs.env_name == 'dev'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          project_name: ${{ needs.context.outputs.project_name }}
-          image_tag: ${{ needs.context.outputs.image_tag }}
-          subdomain: ${{ needs.context.outputs.subdomain }}
-          git_branch: ${{ needs.context.outputs.git_branch }}
-          db_name: ${{ needs.context.outputs.db_name }}
-          env_name: ${{ needs.context.outputs.env_name }}
-          komodo_host: ${{ secrets.KOMODO_HOST }}
-          komodo_api_key: ${{ secrets.KOMODO_API_KEY }}
-          komodo_api_secret: ${{ secrets.KOMODO_API_SECRET }}
-          deploy_ssh_key: ${{ secrets.BROCKCSC_DEPLOY_SSH_KEY }}
-          deploy_host: ${{ secrets.BROCKCSC_DEPLOY_HOST }}
-          deploy_user: ${{ secrets.BROCKCSC_DEPLOY_USER }}
-          db_password: ${{ secrets.BROCKCSC_DB_PASSWORD }}
-          keycloak_issuer: ${{ secrets.BROCKCSC_KEYCLOAK_ISSUER }}
-          keycloak_client_id: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_ID }}
-          keycloak_client_secret: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_SECRET }}
-          session_jwt_secret: ${{ secrets.BROCKCSC_SESSION_JWT_SECRET }}
-
-  deploy-preview:
-    needs: [context, build]
-    if: needs.context.outputs.env_name == 'preview'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          project_name: ${{ needs.context.outputs.project_name }}
-          image_tag: ${{ needs.context.outputs.image_tag }}
-          subdomain: ${{ needs.context.outputs.subdomain }}
-          git_branch: ${{ needs.context.outputs.git_branch }}
-          db_name: ${{ needs.context.outputs.db_name }}
-          env_name: ${{ needs.context.outputs.env_name }}
-          komodo_host: ${{ secrets.KOMODO_HOST }}
-          komodo_api_key: ${{ secrets.KOMODO_API_KEY }}
-          komodo_api_secret: ${{ secrets.KOMODO_API_SECRET }}
-          deploy_ssh_key: ${{ secrets.BROCKCSC_DEPLOY_SSH_KEY }}
-          deploy_host: ${{ secrets.BROCKCSC_DEPLOY_HOST }}
-          deploy_user: ${{ secrets.BROCKCSC_DEPLOY_USER }}
           db_password: ${{ secrets.BROCKCSC_DB_PASSWORD }}
           keycloak_issuer: ${{ secrets.BROCKCSC_KEYCLOAK_ISSUER }}
           keycloak_client_id: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_ID }}
