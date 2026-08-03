@@ -45,8 +45,7 @@ export const buildAuthorizeUrl = (state: string) => {
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", "openid email profile");
   url.searchParams.set("state", state);
-  // No kc_idp_hint - Keycloak shows brockcsc's normal login page, which lists
-  // both local brockcsc-realm accounts and a "master" broker button.
+  // No kc_idp_hint: shows both local accounts and the master broker button.
   return url.toString();
 };
 
