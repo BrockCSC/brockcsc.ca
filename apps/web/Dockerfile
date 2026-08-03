@@ -23,11 +23,11 @@ ENV HOSTNAME=0.0.0.0
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/apps/web/public ./apps/web/public
-# npm workspaces hoists node_modules to the monorepo root, so Next's
-# standalone output tracing nests under apps/web/ to mirror that - the
-# workspace root (this COPY's destination) is where server.js actually ends
-# up, not /app/server.js.
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+# next build ran with cwd=apps/web (npm workspace), so its own .next lives at
+# apps/web/.next. Standalone tracing then nests server.js under apps/web/ to
+# mirror the workspace's path from the traced root - the destination here
+# (repo root) is where server.js actually ends up, not /app/server.js.
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 
 USER nextjs
