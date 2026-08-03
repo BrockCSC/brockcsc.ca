@@ -1,11 +1,35 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+
+type TableColumn = {
+  key: string;
+  label: string;
+};
+
+type TableData = {
+  columns: TableColumn[];
+  rows: Record<string, any>[];
+};
 
 type TableProps = React.HTMLAttributes<HTMLTableElement> & {
   containerClassName?: string;
   containerStyle?: React.CSSProperties;
+
+  // Optional JSON mode: render from data instead of children.
+  data?: TableData;
+
+  // "stack" renders cards on mobile instead of a scrolling table.
+  mobileVariant?: "scroll" | "stack";
 };
+
+function renderCell(value: any) {
+  if (value && typeof value === "object" && value.type === "badge") {
+    return <Badge variant={value.variant || "default"}>{value.label}</Badge>;
+  }
+  return value;
+}
 
 const tableDefaults = {
   "--table-border": "#000000",
@@ -24,24 +48,89 @@ const tableDefaults = {
 // Example: <Table containerStyle={{ "--table-border": "#111", "--table-head-bg": "#f7f7f7" }} />
 
 const Table = React.forwardRef<HTMLTableElement, TableProps>(
-  ({ className, containerClassName, containerStyle, ...props }, ref) => (
-    <div
-      className={cn(
-        "relative w-full overflow-auto rounded-[var(--table-radius)] border-2 border-[color:var(--table-border)] bg-[color:var(--table-bg)] shadow-[var(--table-shadow)]",
-        containerClassName,
-      )}
-      style={{ ...tableDefaults, ...containerStyle }}
-    >
-      <table
-        ref={ref}
+  (
+    {
+      className,
+      containerClassName,
+      containerStyle,
+      data,
+      mobileVariant = "scroll",
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    const isStack = mobileVariant === "stack" && data;
+
+    return (
+      <div
         className={cn(
-          "w-full caption-bottom text-base text-[color:var(--table-text)]",
-          className,
+          "relative w-full rounded-[var(--table-radius)] border-2 border-[color:var(--table-border)] bg-[color:var(--table-bg)] shadow-[var(--table-shadow)] overflow-hidden",
+          mobileVariant === "scroll" && "overflow-x-auto",
+          containerClassName,
         )}
-        {...props}
-      />
-    </div>
-  ),
+        style={{ ...tableDefaults, ...containerStyle }}
+      >
+        {isStack ? (
+          <div className="md:hidden flex flex-col gap-4 p-4">
+            {data.rows.map((row, i) => (
+              <div
+                key={i}
+                className="border-2 border-[color:var(--table-border)] rounded-xl p-4 shadow-[2px_2px_0_#000]"
+              >
+                {data.columns.map((col) => (
+                  <div key={col.key} className="flex justify-between py-1">
+                    <span className="font-semibold">{col.label}</span>
+                    <span>{renderCell(row[col.key])}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        <table
+          ref={ref}
+          className={cn(
+            "w-full caption-bottom text-base text-[color:var(--table-text)]",
+            isStack ? "hidden md:table" : "",
+            className,
+          )}
+          {...props}
+        >
+          {data ? (
+            <>
+              <thead className="bg-[color:var(--table-head-bg)]">
+                <tr className="border-b-2 border-[color:var(--table-border)]">
+                  {data.columns.map((col) => (
+                    <th key={col.key} className="h-12 px-6 text-left font-semibold">
+                      {col.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.rows.map((row, i) => (
+                  <tr
+                    key={i}
+                    className="border-b border-[color:var(--table-divider)] hover:bg-[color:var(--table-hover)]"
+                  >
+                    {data.columns.map((col) => (
+                      <td key={col.key} className="p-4">
+                        {renderCell(row[col.key])}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </>
+          ) : (
+            children
+          )}
+        </table>
+      </div>
+    );
+  },
 );
 Table.displayName = "Table";
 
