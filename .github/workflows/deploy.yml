@@ -1,0 +1,164 @@
+name: Deploy
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  context:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.ctx.outputs.image_tag }}
+      env_name: ${{ steps.ctx.outputs.env_name }}
+      project_name: ${{ steps.ctx.outputs.project_name }}
+      subdomain: ${{ steps.ctx.outputs.subdomain }}
+      db_name: ${{ steps.ctx.outputs.db_name }}
+      git_branch: ${{ steps.ctx.outputs.git_branch }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: ctx
+        run: |
+          set -euo pipefail
+          VPS_HOST="129-153-49-190.sslip.io"
+          SHA_SHORT="${GITHUB_SHA:0:12}"
+
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+            IMAGE_TAG="tag-${TAG_NAME}"
+            ENV_NAME="prod"
+            PROJECT_NAME="brockcsc-prod"
+            SUBDOMAIN="brockcsc.${VPS_HOST}"
+            DB_NAME="brockcsc_prod"
+            GIT_BRANCH="${TAG_NAME}"
+          elif [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            IMAGE_TAG="main-${SHA_SHORT}"
+            ENV_NAME="dev"
+            PROJECT_NAME="brockcsc-dev"
+            SUBDOMAIN="dev.${VPS_HOST}"
+            DB_NAME="brockcsc_dev"
+            GIT_BRANCH="main"
+          else
+            BRANCH="${GITHUB_REF#refs/heads/}"
+            SLUG=$(./deploy/slugify.sh "$BRANCH")
+            IMAGE_TAG="pr-${SLUG}-${SHA_SHORT}"
+            ENV_NAME="preview"
+            PROJECT_NAME="brockcsc-pr-${SLUG}"
+            SUBDOMAIN="${SLUG}.${VPS_HOST}"
+            DB_NAME="brockcsc_preview_${SLUG//-/_}"
+            GIT_BRANCH="${BRANCH}"
+          fi
+
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "env_name=${ENV_NAME}" >> "$GITHUB_OUTPUT"
+          echo "project_name=${PROJECT_NAME}" >> "$GITHUB_OUTPUT"
+          echo "subdomain=${SUBDOMAIN}" >> "$GITHUB_OUTPUT"
+          echo "db_name=${DB_NAME}" >> "$GITHUB_OUTPUT"
+          echo "git_branch=${GIT_BRANCH}" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: context
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build + push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          build-args: |
+            NEXT_PUBLIC_BASE_URL=https://${{ needs.context.outputs.subdomain }}
+          tags: ghcr.io/brockcsc/brockcsc-ca-web:${{ needs.context.outputs.image_tag }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+
+      - name: Build + push api image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./api
+          file: ./api/Dockerfile
+          push: true
+          tags: ghcr.io/brockcsc/brockcsc-ca-api:${{ needs.context.outputs.image_tag }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+
+      - name: Make packages public (first push only, best-effort)
+        continue-on-error: true
+        run: |
+          gh api --method PATCH /orgs/BrockCSC/packages/container/brockcsc-ca-web -f visibility=public || true
+          gh api --method PATCH /orgs/BrockCSC/packages/container/brockcsc-ca-api -f visibility=public || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  provision-db:
+    needs: context
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure database exists
+        env:
+          SSH_KEY: ${{ secrets.BROCKCSC_DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.BROCKCSC_DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.BROCKCSC_DEPLOY_USER }}
+          DB_NAME: ${{ needs.context.outputs.db_name }}
+        run: |
+          set -euo pipefail
+          install -m 600 /dev/null /tmp/deploy_key
+          echo "$SSH_KEY" > /tmp/deploy_key
+          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=accept-new \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" "ensure-db ${DB_NAME}"
+
+  deploy:
+    needs: [context, build, provision-db]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy stack via Komodo
+        env:
+          KOMODO_HOST: ${{ secrets.KOMODO_HOST }}
+          KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
+          KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
+          PROJECT_NAME: ${{ needs.context.outputs.project_name }}
+          IMAGE_TAG: ${{ needs.context.outputs.image_tag }}
+          SUBDOMAIN: ${{ needs.context.outputs.subdomain }}
+          GIT_BRANCH: ${{ needs.context.outputs.git_branch }}
+          DATABASE_URL: postgresql://brockcsc:${{ secrets.BROCKCSC_DB_PASSWORD }}@postgres:5432/${{ needs.context.outputs.db_name }}
+          KEYCLOAK_ISSUER: ${{ secrets.BROCKCSC_KEYCLOAK_ISSUER }}
+          KEYCLOAK_CLIENT_ID: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_ID }}
+          KEYCLOAK_CLIENT_SECRET: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_SECRET }}
+          ADMIN_ROLE: brockcsc-admin
+          SESSION_JWT_SECRET: ${{ secrets.BROCKCSC_SESSION_JWT_SECRET }}
+        run: ./deploy/komodo-deploy.sh
+
+      - name: Annotate deployment URL
+        env:
+          SUBDOMAIN: ${{ needs.context.outputs.subdomain }}
+          ENV_NAME: ${{ needs.context.outputs.env_name }}
+        run: |
+          echo "::notice title=Deployed (${ENV_NAME})::https://${SUBDOMAIN}"
+          {
+            echo "### Deployed :rocket:"
+            echo ""
+            echo "- **Environment:** ${ENV_NAME}"
+            echo "- **URL:** https://${SUBDOMAIN}"
+          } >> "$GITHUB_STEP_SUMMARY"

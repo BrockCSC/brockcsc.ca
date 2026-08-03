@@ -1,0 +1,47 @@
+# Shared template for every environment (prod, dev, branch previews).
+# All the per-environment differences (image tag, hostname, secrets, DB) come
+# in entirely through env vars set on the Komodo Stack resource - this file
+# itself never changes between environments.
+networks:
+  wayfarer-net:
+    external: true
+
+services:
+  web:
+    image: ghcr.io/brockcsc/brockcsc-ca-web:${IMAGE_TAG}
+    container_name: ${PROJECT_NAME}-web
+    restart: unless-stopped
+    networks: [wayfarer-net]
+    environment:
+      # Server components have no browser origin, so they need the api
+      # container's address directly (client-side code just uses /api/...).
+      - API_INTERNAL_URL=http://${PROJECT_NAME}-api:3001
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${PROJECT_NAME}-web.rule=Host(`${SUBDOMAIN}`)"
+      - "traefik.http.routers.${PROJECT_NAME}-web.entrypoints=websecure"
+      - "traefik.http.routers.${PROJECT_NAME}-web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.${PROJECT_NAME}-web.priority=1"
+      - "traefik.http.services.${PROJECT_NAME}-web.loadbalancer.server.port=3000"
+
+  api:
+    image: ghcr.io/brockcsc/brockcsc-ca-api:${IMAGE_TAG}
+    container_name: ${PROJECT_NAME}-api
+    restart: unless-stopped
+    networks: [wayfarer-net]
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - KEYCLOAK_ISSUER=${KEYCLOAK_ISSUER}
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - ADMIN_ROLE=${ADMIN_ROLE}
+      - SESSION_JWT_SECRET=${SESSION_JWT_SECRET}
+      - PUBLIC_URL=https://${SUBDOMAIN}
+      - PORT=3001
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${PROJECT_NAME}-api.rule=Host(`${SUBDOMAIN}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.${PROJECT_NAME}-api.entrypoints=websecure"
+      - "traefik.http.routers.${PROJECT_NAME}-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.${PROJECT_NAME}-api.priority=10"
+      - "traefik.http.services.${PROJECT_NAME}-api.loadbalancer.server.port=3001"

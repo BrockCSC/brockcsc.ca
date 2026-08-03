@@ -1,0 +1,61 @@
+name: Cleanup preview deployments
+
+on:
+  delete:
+  schedule:
+    # Daily at 09:00 UTC - sweeps any preview stack that's stale or whose
+    # branch is gone (belt-and-suspenders alongside the `delete` trigger).
+    - cron: "0 9 * * *"
+
+jobs:
+  on-branch-delete:
+    if: github.event_name == 'delete' && github.event.ref_type == 'branch' && github.event.ref != 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: ctx
+        run: |
+          set -euo pipefail
+          SLUG=$(./deploy/slugify.sh "${{ github.event.ref }}")
+          echo "project_name=brockcsc-pr-${SLUG}" >> "$GITHUB_OUTPUT"
+          echo "db_name=brockcsc_preview_${SLUG//-/_}" >> "$GITHUB_OUTPUT"
+
+      - name: Delete Komodo stack
+        env:
+          KOMODO_HOST: ${{ secrets.KOMODO_HOST }}
+          KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
+          KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
+          PROJECT_NAME: ${{ steps.ctx.outputs.project_name }}
+        run: ./deploy/komodo-delete.sh
+
+      - name: Drop preview database
+        env:
+          SSH_KEY: ${{ secrets.BROCKCSC_DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.BROCKCSC_DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.BROCKCSC_DEPLOY_USER }}
+          DB_NAME: ${{ steps.ctx.outputs.db_name }}
+        run: |
+          set -euo pipefail
+          install -m 600 /dev/null /tmp/deploy_key
+          echo "$SSH_KEY" > /tmp/deploy_key
+          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=accept-new \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" "drop-db ${DB_NAME}"
+
+  stale-sweep:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sweep stale preview deployments
+        env:
+          KOMODO_HOST: ${{ secrets.KOMODO_HOST }}
+          KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
+          KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          BROCKCSC_DEPLOY_SSH_KEY: ${{ secrets.BROCKCSC_DEPLOY_SSH_KEY }}
+          BROCKCSC_DEPLOY_HOST: ${{ secrets.BROCKCSC_DEPLOY_HOST }}
+          BROCKCSC_DEPLOY_USER: ${{ secrets.BROCKCSC_DEPLOY_USER }}
+        run: ./deploy/cleanup-stale.sh
