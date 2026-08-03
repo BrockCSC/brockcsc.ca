@@ -45,9 +45,8 @@ export const buildAuthorizeUrl = (state: string) => {
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", "openid email profile");
   url.searchParams.set("state", state);
-  // Skip brockcsc's own login form and go straight to the master realm via
-  // the identity broker - there's only one admin account and it lives there.
-  url.searchParams.set("kc_idp_hint", "master");
+  // No kc_idp_hint - Keycloak shows brockcsc's normal login page, which lists
+  // both local brockcsc-realm accounts and a "master" broker button.
   return url.toString();
 };
 
