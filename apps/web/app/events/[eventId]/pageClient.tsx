@@ -47,6 +47,7 @@ export default function EventDetailPageClient() {
   const [event, setEvent] = useState<EventItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [now] = useState(() => Date.now());
 
   useEffect(() => {
     let active = true;
@@ -95,9 +96,9 @@ export default function EventDetailPageClient() {
       return false;
     }
 
-    const timing = getEventTiming(event, Date.now());
+    const timing = getEventTiming(event, now);
     return !timing.isOngoing && timing.nextStartTimestamp === null;
-  }, [event]);
+  }, [event, now]);
   const eventStartTimestamp = useMemo(
     () => (event ? getEventStartTimestamp(event) : null),
     [event],
