@@ -180,9 +180,7 @@ export default function ExecModal({
           />
         </div>
         {saveError && (
-          <p className="mb-4 text-sm font-semibold text-red-600">
-            {saveError}
-          </p>
+          <p className="mb-4 text-sm font-semibold text-red-600">{saveError}</p>
         )}
         <div className="flex gap-4">
           <Button variant="primary" type="submit" disabled={isSaving}>

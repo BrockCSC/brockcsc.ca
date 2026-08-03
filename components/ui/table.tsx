@@ -1,16 +1,25 @@
 import * as React from "react";
+import type { VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 
-type TableColumn = {
+export type TableColumn = {
   key: string;
   label: string;
 };
 
-type TableData = {
+export type BadgeCell = {
+  type: "badge";
+  label: string;
+  variant?: VariantProps<typeof badgeVariants>["variant"];
+};
+
+export type TableCellValue = string | number | BadgeCell;
+
+export type TableData = {
   columns: TableColumn[];
-  rows: Record<string, any>[];
+  rows: Record<string, TableCellValue>[];
 };
 
 type TableProps = React.HTMLAttributes<HTMLTableElement> & {
@@ -24,8 +33,8 @@ type TableProps = React.HTMLAttributes<HTMLTableElement> & {
   mobileVariant?: "scroll" | "stack";
 };
 
-function renderCell(value: any) {
-  if (value && typeof value === "object" && value.type === "badge") {
+function renderCell(value: TableCellValue): React.ReactNode {
+  if (typeof value === "object") {
     return <Badge variant={value.variant || "default"}>{value.label}</Badge>;
   }
   return value;
@@ -103,7 +112,10 @@ const Table = React.forwardRef<HTMLTableElement, TableProps>(
               <thead className="bg-[color:var(--table-head-bg)]">
                 <tr className="border-b-2 border-[color:var(--table-border)]">
                   {data.columns.map((col) => (
-                    <th key={col.key} className="h-12 px-6 text-left font-semibold">
+                    <th
+                      key={col.key}
+                      className="h-12 px-6 text-left font-semibold"
+                    >
                       {col.label}
                     </th>
                   ))}

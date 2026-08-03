@@ -1,34 +1,34 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Menu, X } from 'lucide-react'; // Optional: Install lucide-react for icons
+import { Menu, X } from "lucide-react"; // Optional: Install lucide-react for icons
 
 export default function Sidebar() {
   const [activeId, setActiveId] = useState("introduction");
 
   useEffect(() => {
-  const sections = document.querySelectorAll("section[id]");
+    const sections = document.querySelectorAll("section[id]");
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      const visible = Array.from(entries)
-        .filter(e => e.isIntersecting)
-        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = Array.from(entries)
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
 
-      if (visible.length > 0) {
-        const current = visible[0].target.id;
-        setActiveId(prev => (prev !== current ? current : prev));
-      }
-    },
-    {
-      rootMargin: "-50% 0px -50% 0px",
-      threshold: 0
-    }
-  );
+        if (visible.length > 0) {
+          const current = visible[0].target.id;
+          setActiveId((prev) => (prev !== current ? current : prev));
+        }
+      },
+      {
+        rootMargin: "-50% 0px -50% 0px",
+        threshold: 0,
+      },
+    );
 
-  sections.forEach(section => observer.observe(section));
+    sections.forEach((section) => observer.observe(section));
 
-  return () => observer.disconnect();
-}, []);
+    return () => observer.disconnect();
+  }, []);
 
   const handleClick = (id: string) => {
     setActiveId(id); // instant UI feedback
@@ -40,12 +40,12 @@ export default function Sidebar() {
   const defaultStyle =
     "bg-white text-black hover:translate-x-1 hover:translate-y-[1px]";
 
-    const toggleMenu = () => setIsOpen(!isOpen);
+  const toggleMenu = () => setIsOpen(!isOpen);
 
-    const handleNavClick = (id: string) => {
-        handleClick(id); // Your existing logic
-        setIsOpen(false); // Close menu after selection
-    };
+  const handleNavClick = (id: string) => {
+    handleClick(id); // Your existing logic
+    setIsOpen(false); // Close menu after selection
+  };
 
   const navItems = [
     { name: "Introduction", id: "introduction", indent: false },
@@ -60,7 +60,11 @@ export default function Sidebar() {
     { name: "Minor in Applied Computing", id: "minor-computing", indent: true },
     { name: "Double Major", id: "double-major", indent: true },
     { name: "Courses", id: "courses", indent: true },
-    { name: "Resources and Opportunities", id: "resources-oportunities", indent: false },
+    {
+      name: "Resources and Opportunities",
+      id: "resources-oportunities",
+      indent: false,
+    },
     { name: "Resources", id: "resources", indent: true },
     { name: "Opportunities", id: "opportunities", indent: true },
   ];
@@ -69,16 +73,17 @@ export default function Sidebar() {
     <>
       {/* 1. Hamburger Button (Visible on mobile/tablet, hidden on desktop) */}
       <button
-      onClick={toggleMenu}
-      className={`lg:hidden fixed right-4 z-50 p-2 bg-white border-2 border-black shadow-[3px_3px_0_#000] rounded-xl ${
-        isOpen ? 'top-5' : 'top-25'
-      }`}
+        onClick={toggleMenu}
+        className={`lg:hidden fixed right-4 z-50 p-2 bg-white border-2 border-black shadow-[3px_3px_0_#000] rounded-xl ${
+          isOpen ? "top-5" : "top-25"
+        }`}
       >
-      {isOpen ? <X size={24} /> : <Menu size={24} />}
+        {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       {/* 2. Sidebar Container */}
-      <aside className={`
+      <aside
+        className={`
         /* Desktop Defaults */
         lg:block lg:sticky lg:top-24 lg:w-64 lg:h-fit shrink-0
         
@@ -89,12 +94,15 @@ export default function Sidebar() {
         
         /* Mobile full screen vs Tablet partial */
         w-full md:w-80 ml-auto lg:ml-0
-      `}>
-        <nav className={`
+      `}
+      >
+        <nav
+          className={`
           space-y-2 p-6 lg:p-0 
           flex flex-col h-full 
           ${isOpen ? "justify-center items-center" : "justify-start"} lg:justify-start
-        `}>
+        `}
+        >
           {navItems.map((item) => (
             <a
               key={item.id}
@@ -102,13 +110,13 @@ export default function Sidebar() {
               onClick={() => handleNavClick(item.id)}
               className={`
                     block rounded-xl border-2 border-black shadow-[3px_3px_0_#000] transition duration-200 text-center lg:text-left
-                    ${item.indent 
-                    ? "ml-6 w-[calc(100%-1.5rem)] text-sm px-2 py-1 my-1" // Indented style (smaller)
-                    : "w-full px-4 py-3 lg:py-3 py-4 text-lg lg:text-base" // Standard style (larger)
+                    ${
+                      item.indent
+                        ? "ml-6 w-[calc(100%-1.5rem)] text-sm px-2 py-1 my-1" // Indented style (smaller)
+                        : "w-full px-4 py-3 lg:py-3 py-4 text-lg lg:text-base" // Standard style (larger)
                     }
                     ${activeId === item.id ? activeStyle : defaultStyle}
                     `}
-
             >
               {item.name}
             </a>
@@ -118,8 +126,8 @@ export default function Sidebar() {
 
       {/* 3. Backdrop (Closes menu when clicking outside) */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden" 
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={toggleMenu}
         />
       )}
