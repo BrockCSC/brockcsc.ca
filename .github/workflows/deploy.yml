@@ -67,7 +67,9 @@ jobs:
 
   build:
     needs: [context, checks]
-    runs-on: ubuntu-latest
+    # The VPS is ARM64 (Oracle Ampere) - build natively on an ARM64 runner
+    # rather than cross-building with QEMU from amd64.
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
       packages: write
