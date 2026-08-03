@@ -1,4 +1,4 @@
-import type { EventRecord, WithKey } from "@/lib/firebase/types";
+import type { EventRecord, WithKey } from "@/lib/api/types";
 
 import { getEventStartTimestamp, getEventTiming } from "./schedule";
 

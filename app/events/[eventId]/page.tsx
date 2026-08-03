@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { fetchEventTitleByIdServer } from "@/lib/firebase";
+import { fetchEventTitleByIdServer } from "@/lib/api";
 
 import EventDetailPageClient from "./pageClient";
 

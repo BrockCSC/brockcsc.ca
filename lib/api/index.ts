@@ -1,7 +1,3 @@
-export { getFirebaseConfig } from './config';
-export { getMissingFirebaseEnvKeys } from './config';
-export { getFirebaseClient } from './client';
-export { fetchEventTitleByIdServer } from './server';
 export {
   fetchAllDscCards,
   fetchAllEvents,
@@ -9,17 +5,23 @@ export {
   fetchAllFoodItems,
   fetchCurrentExecs,
   fetchEventById,
+  fetchEventTitleByIdServer,
   fetchFutureEvents,
   fetchPastEvents,
   fetchPreviousExecs,
   createExec,
   updateExec,
-  deleteExec
-} from './realtime';
+  deleteExec,
+  createEvent,
+  editEvent,
+  deleteEvent,
+} from "./records";
+export { fetchCurrentUser, redirectToLogin, logout } from "./auth";
+export type { SessionUser } from "./auth";
 export type {
   DscCardRecord,
   EventRecord,
   ExecRecord,
   FoodRecord,
   WithKey,
-} from './types';
+} from "./types";

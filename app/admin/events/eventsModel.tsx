@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/ui/modal";
 import { useState } from "react";
-import { EventRecord, WithKey } from "@/lib/firebase";
-import { createEvent, editEvent } from "@/lib/firebase/realtime";
+import { EventRecord, WithKey, createEvent, editEvent } from "@/lib/api";
 
 export default function EventModal({ showModal, setShowModal, variant="create", selectedEvent, onSave } : { showModal: boolean; setShowModal: (value: boolean) => void; variant: "create" | "edit"; selectedEvent?: WithKey<EventRecord> | null; onSave: () => void }) {
 	const parseDatetimeLocal = (dateStr?: string, timeStr?: string) => {

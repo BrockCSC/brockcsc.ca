@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { deleteExec, ExecRecord, fetchCurrentExecs, fetchPreviousExecs, WithKey } from "@/lib/firebase";
+import { deleteExec, ExecRecord, fetchCurrentExecs, fetchPreviousExecs, WithKey } from "@/lib/api";
 import ExecModal from "./execModel";
 import { ConfirmationModal } from "@/components/ui/modal";
 import { AdminTable, ColumnDef } from "@/components/ui/admin-table";

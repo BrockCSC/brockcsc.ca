@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Clock3, MapPin } from "lucide-react";
 
-import { fetchFutureEvents, type EventRecord, type WithKey } from "@/lib/firebase";
+import { fetchFutureEvents, type EventRecord, type WithKey } from "@/lib/api";
 import { formatEventDayBadge, formatEventTimeLabel, getEventStartTimestamp } from "@/lib/events/schedule";
 import { EventCard } from "@/components/ui/event-card";
 

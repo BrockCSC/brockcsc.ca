@@ -1,4 +1,4 @@
-import type { EventRecord } from "@/lib/firebase/types";
+import type { EventRecord } from "@/lib/api/types";
 
 type RecurrenceUnit = "day" | "week" | "month";
 

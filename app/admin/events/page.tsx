@@ -3,10 +3,9 @@
 import { Button } from "@/components/ui/button";
 import EventModal from "./eventsModel";
 import { useEffect, useMemo, useState } from "react";
-import { EventRecord, fetchAllEvents, WithKey } from "@/lib/firebase";
+import { EventRecord, fetchAllEvents, WithKey, deleteEvent } from "@/lib/api";
 import { classifyEventsByTiming } from "@/lib/events/classify";
 import { getEventTiming, formatEventTimeLabel, formatNextOccurrenceDate } from "@/lib/events/schedule";
-import { deleteEvent } from "@/lib/firebase/realtime";
 import { ConfirmationModal } from "@/components/ui/modal";
 import { AdminTable, ColumnDef } from "@/components/ui/admin-table";
 

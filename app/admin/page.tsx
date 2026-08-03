@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import Card from "@/components/ui/card";
 import { EventCard } from "../events/components/event-card";
-import { EventRecord, fetchFutureEvents, WithKey } from "@/lib/firebase";
+import { EventRecord, fetchFutureEvents, WithKey } from "@/lib/api";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 

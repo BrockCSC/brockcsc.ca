@@ -1,0 +1,26 @@
+"use client";
+
+import { apiFetch, ApiError } from "./client";
+
+export type SessionUser = {
+  sub: string;
+  email: string;
+  name: string;
+};
+
+export const fetchCurrentUser = async (): Promise<SessionUser | null> => {
+  try {
+    return await apiFetch<SessionUser>("/api/auth/me");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) return null;
+    throw err;
+  }
+};
+
+export const redirectToLogin = () => {
+  window.location.href = "/api/auth/login";
+};
+
+export const logout = async (): Promise<void> => {
+  await apiFetch("/api/auth/logout", { method: "POST" });
+};

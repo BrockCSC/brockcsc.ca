@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { fetchEventById, type EventRecord, type WithKey } from "@/lib/firebase";
+import { fetchEventById, type EventRecord, type WithKey } from "@/lib/api";
 import {
   formatEventDateLabel,
   formatEventTimeLabel,

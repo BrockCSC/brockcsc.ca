@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/ui/modal";
-import { ExecRecord, WithKey, createExec, updateExec } from "@/lib/firebase";
+import { ExecRecord, WithKey, createExec, updateExec } from "@/lib/api";
 import { useState } from "react";
 
 type TeamMember = WithKey<ExecRecord>;

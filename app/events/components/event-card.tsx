@@ -6,7 +6,7 @@ import { Activity, CalendarDays, Clock3, MapPin, Repeat } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { EventRecord, WithKey } from "@/lib/firebase";
+import type { EventRecord, WithKey } from "@/lib/api";
 import {
   formatEventDayBadge,
   formatEventTimeLabel,

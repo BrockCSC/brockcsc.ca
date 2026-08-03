@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ChevronDown, UserRound } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import type { ExecRecord, WithKey } from "@/lib/firebase";
+import type { ExecRecord, WithKey } from "@/lib/api";
 
 type TeamMemberCardProps = {
   member: WithKey<ExecRecord>;

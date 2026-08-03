@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Users, FileText, User } from "lucide-react";
 import { InfoCardButton } from "@/components/ui/info-card-button";
-import { fetchCurrentExecs, type ExecRecord, type WithKey } from "@/lib/firebase";
+import { fetchCurrentExecs, type ExecRecord, type WithKey } from "@/lib/api";
 
 export function AboutUsSection() {
   const [execs, setExecs] = useState<WithKey<ExecRecord>[]>([]);

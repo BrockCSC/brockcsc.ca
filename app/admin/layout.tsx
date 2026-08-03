@@ -1,8 +1,7 @@
 "use client";
 
-import { getFirebaseClient } from "@/lib/firebase";
-import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
-import { useEffect, useState, useRef } from "react";
+import { fetchCurrentUser, redirectToLogin, logout } from "@/lib/api";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 
@@ -13,40 +12,34 @@ const adminTabs = [
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { auth } = getFirebaseClient();
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
-  const isLoggingOut = useRef(false);
 
-  // Authentication logic: Redirect to login if not authenticated, otherwise show admin layout
+  // Authentication logic: redirect to Keycloak login if there's no valid session
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    let cancelled = false;
+
+    fetchCurrentUser().then((user) => {
+      if (cancelled) return;
       if (!user) {
-        if (isLoggingOut.current) return;
-        
-        try {
-          const provider = new GoogleAuthProvider();
-          await signInWithPopup(auth, provider);
-        } catch (error) {
-          console.error("Login failed:", error);
-          router.push("/");
-        }
-      } else {
-        setLoading(false);
+        redirectToLogin();
+        return;
       }
+      setLoading(false);
     });
-    return () => unsubscribe();
-  }, [auth, router]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
-      isLoggingOut.current = true;
-      await signOut(auth);
+      await logout();
       router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
-      isLoggingOut.current = false;
     }
   };
 

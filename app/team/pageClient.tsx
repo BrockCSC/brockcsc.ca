@@ -7,7 +7,7 @@ import {
   fetchPreviousExecs,
   type ExecRecord,
   type WithKey,
-} from "@/lib/firebase";
+} from "@/lib/api";
 
 import { TeamMemberCard } from "./components/team-member-card";
 

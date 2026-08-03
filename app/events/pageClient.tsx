@@ -6,7 +6,7 @@ import {
   fetchAllEvents,
   type EventRecord,
   type WithKey,
-} from "@/lib/firebase";
+} from "@/lib/api";
 import { classifyEventsByTiming } from "@/lib/events/classify";
 import { getEventStartTimestamp } from "@/lib/events/schedule";
 
