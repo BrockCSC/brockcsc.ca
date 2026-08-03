@@ -1,4 +1,3 @@
-import crypto from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
@@ -7,7 +6,6 @@ const {
   KEYCLOAK_CLIENT_ID,
   KEYCLOAK_CLIENT_SECRET,
   SESSION_JWT_SECRET,
-  PUBLIC_URL,
   ADMIN_ROLE = "brockcsc-admin",
 } = process.env;
 
@@ -16,12 +14,9 @@ for (const [name, value] of Object.entries({
   KEYCLOAK_CLIENT_ID,
   KEYCLOAK_CLIENT_SECRET,
   SESSION_JWT_SECRET,
-  PUBLIC_URL,
 })) {
   if (!value) throw new Error(`${name} env var is not set.`);
 }
-
-const redirectUri = `${PUBLIC_URL}/api/auth/callback`;
 
 export type SessionUser = {
   sub: string;
@@ -29,7 +24,6 @@ export type SessionUser = {
   name: string;
 };
 
-const STATE_COOKIE = "brockcsc_oauth_state";
 const SESSION_COOKIE = "brockcsc_session";
 const cookieBase = {
   httpOnly: true,
@@ -38,30 +32,14 @@ const cookieBase = {
   path: "/",
 };
 
-export const buildAuthorizeUrl = (state: string) => {
-  const url = new URL(`${KEYCLOAK_ISSUER}/protocol/openid-connect/auth`);
-  url.searchParams.set("client_id", KEYCLOAK_CLIENT_ID!);
-  url.searchParams.set("redirect_uri", redirectUri);
-  url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "openid email profile");
-  url.searchParams.set("state", state);
-  // No kc_idp_hint: shows both local accounts and the master broker button.
-  return url.toString();
-};
+export const handleLogin = async (req: Request, res: Response) => {
+  const { username, password } = req.body as {
+    username?: string;
+    password?: string;
+  };
 
-export const handleLogin = (_req: Request, res: Response) => {
-  const state = crypto.randomBytes(16).toString("hex");
-  res.cookie(STATE_COOKIE, state, { ...cookieBase, maxAge: 5 * 60 * 1000 });
-  res.redirect(buildAuthorizeUrl(state));
-};
-
-export const handleCallback = async (req: Request, res: Response) => {
-  const { code, state } = req.query;
-  const expectedState = req.cookies?.[STATE_COOKIE];
-  res.clearCookie(STATE_COOKIE, cookieBase);
-
-  if (!code || !state || state !== expectedState) {
-    res.redirect("/?login_error=state_mismatch");
+  if (!username || !password) {
+    res.status(400).json({ error: "Username and password are required" });
     return;
   }
 
@@ -71,17 +49,18 @@ export const handleCallback = async (req: Request, res: Response) => {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
-        grant_type: "authorization_code",
+        grant_type: "password",
         client_id: KEYCLOAK_CLIENT_ID!,
         client_secret: KEYCLOAK_CLIENT_SECRET!,
-        redirect_uri: redirectUri,
-        code: String(code),
+        scope: "openid",
+        username,
+        password,
       }),
     },
   );
 
   if (!tokenResponse.ok) {
-    res.redirect("/?login_error=token_exchange_failed");
+    res.status(401).json({ error: "Invalid username or password" });
     return;
   }
 
@@ -100,7 +79,7 @@ export const handleCallback = async (req: Request, res: Response) => {
 
   const roles = payload?.realm_access?.roles ?? [];
   if (!payload || !roles.includes(ADMIN_ROLE)) {
-    res.redirect("/?login_error=not_authorized");
+    res.status(403).json({ error: "Not authorized" });
     return;
   }
 
@@ -117,7 +96,7 @@ export const handleCallback = async (req: Request, res: Response) => {
     ...cookieBase,
     maxAge: 24 * 60 * 60 * 1000,
   });
-  res.redirect("/admin");
+  res.json(session);
 };
 
 export const handleLogout = (_req: Request, res: Response) => {

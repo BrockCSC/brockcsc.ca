@@ -1,9 +1,10 @@
 "use client";
 
-import { fetchCurrentUser, redirectToLogin, logout } from "@/lib/api";
+import { fetchCurrentUser, logout } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import { LoginForm } from "@/components/admin/login-form";
 
 const adminTabs = [
   { name: "Dashboard", href: "/admin" },
@@ -19,17 +20,14 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
 
-  // Authentication logic: redirect to Keycloak login if there's no valid session
   useEffect(() => {
     let cancelled = false;
 
     fetchCurrentUser().then((user) => {
       if (cancelled) return;
-      if (!user) {
-        redirectToLogin();
-        return;
-      }
+      setAuthenticated(!!user);
       setLoading(false);
     });
 
@@ -41,6 +39,7 @@ export default function AdminLayout({
   const handleLogout = async () => {
     try {
       await logout();
+      setAuthenticated(false);
       router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -53,6 +52,10 @@ export default function AdminLayout({
         Authenticating...
       </div>
     );
+  }
+
+  if (!authenticated) {
+    return <LoginForm onSuccess={() => setAuthenticated(true)} />;
   }
 
   // Admin layout with navigation tabs and content area

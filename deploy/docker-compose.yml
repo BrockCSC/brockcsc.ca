@@ -33,7 +33,6 @@ services:
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_ROLE=${ADMIN_ROLE}
       - SESSION_JWT_SECRET=${SESSION_JWT_SECRET}
-      - PUBLIC_URL=https://${SUBDOMAIN}
       - PORT=3001
     labels:
       - "traefik.enable=true"

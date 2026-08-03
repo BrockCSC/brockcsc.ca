@@ -1,6 +1,6 @@
 import cookieParser from "cookie-parser";
 import express from "express";
-import { handleCallback, handleLogin, handleLogout, handleMe } from "./auth.js";
+import { handleLogin, handleLogout, handleMe } from "./auth.js";
 import { crudRouter } from "./routes/crud.js";
 
 const app = express();
@@ -10,8 +10,7 @@ app.use(cookieParser());
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
-app.get("/api/auth/login", handleLogin);
-app.get("/api/auth/callback", handleCallback);
+app.post("/api/auth/login", handleLogin);
 app.post("/api/auth/logout", handleLogout);
 app.get("/api/auth/me", handleMe);
 

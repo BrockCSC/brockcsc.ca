@@ -16,7 +16,7 @@ export {
   editEvent,
   deleteEvent,
 } from "./records";
-export { fetchCurrentUser, redirectToLogin, logout } from "./auth";
+export { fetchCurrentUser, login, logout } from "./auth";
 export type { SessionUser } from "./auth";
 export type {
   DscCardRecord,
