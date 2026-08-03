@@ -94,11 +94,11 @@ jobs:
           git_branch: ${{ needs.context.outputs.git_branch }}
           db_schema: ${{ needs.context.outputs.db_schema }}
           env_name: ${{ needs.context.outputs.env_name }}
-          komodo_host: ${{ secrets.KOMODO_HOST }}
+          komodo_host: ${{ vars.KOMODO_HOST }}
           komodo_api_key: ${{ secrets.KOMODO_API_KEY }}
           komodo_api_secret: ${{ secrets.KOMODO_API_SECRET }}
           db_password: ${{ secrets.BROCKCSC_DB_PASSWORD }}
-          keycloak_issuer: ${{ secrets.BROCKCSC_KEYCLOAK_ISSUER }}
-          keycloak_client_id: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_ID }}
+          keycloak_issuer: ${{ vars.BROCKCSC_KEYCLOAK_ISSUER }}
+          keycloak_client_id: ${{ vars.BROCKCSC_KEYCLOAK_CLIENT_ID }}
           keycloak_client_secret: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_SECRET }}
           session_jwt_secret: ${{ secrets.BROCKCSC_SESSION_JWT_SECRET }}

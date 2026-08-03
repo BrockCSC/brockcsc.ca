@@ -22,7 +22,7 @@ jobs:
       - name: Delete Komodo stack
         working-directory: .github/scripts
         env:
-          KOMODO_HOST: ${{ secrets.KOMODO_HOST }}
+          KOMODO_HOST: ${{ vars.KOMODO_HOST }}
           KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
           KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
           PROJECT_NAME: ${{ steps.ctx.outputs.project_name }}
@@ -32,8 +32,8 @@ jobs:
         working-directory: .github/scripts
         env:
           SSH_KEY: ${{ secrets.BROCKCSC_DEPLOY_SSH_KEY }}
-          DEPLOY_HOST: ${{ secrets.BROCKCSC_DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.BROCKCSC_DEPLOY_USER }}
+          DEPLOY_HOST: ${{ vars.BROCKCSC_DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.BROCKCSC_DEPLOY_USER }}
           DB_SCHEMA: ${{ steps.ctx.outputs.db_schema }}
         run: npx tsx src/drop-preview-schema.ts
 
@@ -54,12 +54,12 @@ jobs:
       - name: Sweep stale preview deployments
         working-directory: .github/scripts
         env:
-          KOMODO_HOST: ${{ secrets.KOMODO_HOST }}
+          KOMODO_HOST: ${{ vars.KOMODO_HOST }}
           KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
           KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           BROCKCSC_DEPLOY_SSH_KEY: ${{ secrets.BROCKCSC_DEPLOY_SSH_KEY }}
-          BROCKCSC_DEPLOY_HOST: ${{ secrets.BROCKCSC_DEPLOY_HOST }}
-          BROCKCSC_DEPLOY_USER: ${{ secrets.BROCKCSC_DEPLOY_USER }}
+          BROCKCSC_DEPLOY_HOST: ${{ vars.BROCKCSC_DEPLOY_HOST }}
+          BROCKCSC_DEPLOY_USER: ${{ vars.BROCKCSC_DEPLOY_USER }}
         run: npx tsx src/cleanup-stale.ts
