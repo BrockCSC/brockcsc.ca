@@ -1,14 +1,11 @@
 #!/bin/sh
-# Forced-command entrypoint for the brockcsc deploy key - only these two fixed scripts can run.
+# Forced-command entrypoint for the brockcsc deploy key - only this one fixed script can run.
 set -eu
 cmd="${SSH_ORIGINAL_COMMAND:-}"
 action=$(printf '%s' "$cmd" | awk '{print $1}')
 arg=$(printf '%s' "$cmd" | awk '{print $2}')
 
 case "$action" in
-  ensure-db)
-    exec /opt/wayfarer/brockcsc/ensure-db.sh "$arg"
-    ;;
   drop-db)
     exec /opt/wayfarer/brockcsc/drop-db.sh "$arg"
     ;;

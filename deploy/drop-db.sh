@@ -1,19 +1,20 @@
 #!/bin/sh
-# Restricted to brockcsc_preview_* so this can never touch prod/dev.
+# Restricted to preview_* schemas so this can never touch prod/dev. Runs as
+# the brockcsc role (no superuser) since brockcsc owns every schema it creates.
 set -eu
-DB_NAME="${1:?usage: drop-db.sh <db_name>}"
+DB_SCHEMA="${1:?usage: drop-db.sh <db_schema>}"
 
-case "$DB_NAME" in
-  brockcsc_preview_*) ;;
+case "$DB_SCHEMA" in
+  preview_*) ;;
   *)
-    echo "refusing: can only drop brockcsc_preview_* databases" >&2
+    echo "refusing: can only drop preview_* schemas" >&2
     exit 1
     ;;
 esac
 
-echo "$DB_NAME" | grep -Eq '^[a-z0-9_]+$' || {
-  echo "refusing: invalid db name '$DB_NAME'" >&2
+echo "$DB_SCHEMA" | grep -Eq '^[a-z0-9_]+$' || {
+  echo "refusing: invalid schema name '$DB_SCHEMA'" >&2
   exit 1
 }
 
-sudo docker exec postgres psql -U postgres -c "DROP DATABASE IF EXISTS $DB_NAME"
+sudo docker exec postgres psql -U brockcsc -d brockcsc -c "DROP SCHEMA IF EXISTS \"$DB_SCHEMA\" CASCADE"
