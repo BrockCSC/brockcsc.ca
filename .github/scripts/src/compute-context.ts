@@ -5,7 +5,7 @@ const VPS_HOST = "129-153-49-190.sslip.io";
 
 interface Context {
   imageTag: string;
-  envName: "prod" | "dev" | "preview";
+  envName: "prod" | "uat" | "dev";
   projectName: string;
   subdomain: string;
   dbSchema: string;
@@ -14,13 +14,13 @@ interface Context {
 
 function computeContext(): Context {
   // cleanup.yml's branch-delete trigger already has the bare branch name
-  // (no full ref, no meaningful sha) - it always means a preview teardown.
+  // (no full ref, no meaningful sha) - it always means a per-branch dev teardown.
   const branchOverride = process.env.BRANCH_OVERRIDE?.trim();
   if (branchOverride) {
     const slug = slugify(branchOverride);
     return {
       imageTag: "",
-      envName: "preview",
+      envName: "dev",
       projectName: `brockcsc-pr-${slug}`,
       subdomain: `${slug}.${VPS_HOST}`,
       dbSchema: `preview_${schemaSlug(slug)}`,
@@ -46,10 +46,10 @@ function computeContext(): Context {
   if (ref === "refs/heads/main") {
     return {
       imageTag: `main-${shaShort}`,
-      envName: "dev",
-      projectName: "brockcsc-dev",
-      subdomain: `dev.${VPS_HOST}`,
-      dbSchema: "dev",
+      envName: "uat",
+      projectName: "brockcsc-uat",
+      subdomain: `uat.${VPS_HOST}`,
+      dbSchema: "uat",
       gitBranch: "main",
     };
   }
@@ -58,7 +58,7 @@ function computeContext(): Context {
   const slug = slugify(branch);
   return {
     imageTag: `pr-${slug}-${shaShort}`,
-    envName: "preview",
+    envName: "dev",
     projectName: `brockcsc-pr-${slug}`,
     subdomain: `${slug}.${VPS_HOST}`,
     dbSchema: `preview_${schemaSlug(slug)}`,
