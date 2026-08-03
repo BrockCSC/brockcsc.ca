@@ -19,7 +19,6 @@ out/
 
 # production
 build
-apps/api/dist
 
 # misc
 .DS_Store
@@ -36,6 +35,9 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# claude code local settings
+.claude/settings.local.json
 
 # typescript
 *.tsbuildinfo

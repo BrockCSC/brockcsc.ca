@@ -5,25 +5,9 @@ networks:
     external: true
 
 services:
-  web:
-    image: ghcr.io/brockcsc/brockcsc-ca-web:${IMAGE_TAG}
-    container_name: ${PROJECT_NAME}-web
-    restart: unless-stopped
-    networks: [wayfarer-net]
-    environment:
-      # Server components have no browser origin to resolve /api/... against.
-      - API_INTERNAL_URL=http://${PROJECT_NAME}-api:3001
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.${PROJECT_NAME}-web.rule=Host(`${SUBDOMAIN}`)"
-      - "traefik.http.routers.${PROJECT_NAME}-web.entrypoints=websecure"
-      - "traefik.http.routers.${PROJECT_NAME}-web.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.${PROJECT_NAME}-web.priority=1"
-      - "traefik.http.services.${PROJECT_NAME}-web.loadbalancer.server.port=3000"
-
-  api:
-    image: ghcr.io/brockcsc/brockcsc-ca-api:${IMAGE_TAG}
-    container_name: ${PROJECT_NAME}-api
+  app:
+    image: ghcr.io/brockcsc/brockcsc-ca:${IMAGE_TAG}
+    container_name: ${PROJECT_NAME}-app
     restart: unless-stopped
     networks: [wayfarer-net]
     environment:
@@ -34,11 +18,16 @@ services:
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_ROLE=${ADMIN_ROLE}
       - SESSION_JWT_SECRET=${SESSION_JWT_SECRET}
-      - PORT=3001
+      - PORT=3000
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.${PROJECT_NAME}-api.rule=Host(`${SUBDOMAIN}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.${PROJECT_NAME}-api.entrypoints=websecure"
-      - "traefik.http.routers.${PROJECT_NAME}-api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.${PROJECT_NAME}-api.priority=10"
-      - "traefik.http.services.${PROJECT_NAME}-api.loadbalancer.server.port=3001"
+      - "traefik.http.routers.${PROJECT_NAME}-app.rule=Host(`${SUBDOMAIN}`)"
+      - "traefik.http.routers.${PROJECT_NAME}-app.entrypoints=websecure"
+      - "traefik.http.routers.${PROJECT_NAME}-app.tls.certresolver=letsencrypt"
+      - "traefik.http.services.${PROJECT_NAME}-app.loadbalancer.server.port=3000"
