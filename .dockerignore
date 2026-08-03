@@ -1,0 +1,10 @@
+node_modules
+apps/*/node_modules
+apps/*/.next
+apps/*/dist
+.git
+.env
+.env.*
+!.env.example
+npm-debug.log*
+README.md
