@@ -7,10 +7,11 @@ This is the repository for the new Brock University Computer Science Club web pa
 - Tailwind CSS: 4.0
 - Firebase: 12.9.0
 - Node.js >= v20
----------------------------------------------------------
+
+---
 
 Dev env: [http://localhost:3000](http://localhost:3000)
-  
+
 ### Prerequisites
 
 - [Node][node] >= v20
@@ -26,9 +27,11 @@ First, run `npm install` from the terminal. This will install all the required p
 ### Development
 
 To run a development server, run:
+
 ```bash
 npm run dev
 ```
+
 This will spawn a Next.js server which can be accessed from `http://localhost:3000`. The file `app/page.tsx` acts as the root page, and routing is handled automatically inside the `app/` directory (Next.js App Router).
 
 ### Building the project

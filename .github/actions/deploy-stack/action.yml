@@ -1,0 +1,70 @@
+name: Deploy stack
+description: Provision the DB, deploy the Komodo stack, annotate the URL
+
+inputs:
+  project_name: { required: true }
+  image_tag: { required: true }
+  subdomain: { required: true }
+  git_branch: { required: true }
+  db_name: { required: true }
+  env_name: { required: true }
+  komodo_host: { required: true }
+  komodo_api_key: { required: true }
+  komodo_api_secret: { required: true }
+  deploy_ssh_key: { required: true }
+  deploy_host: { required: true }
+  deploy_user: { required: true }
+  db_password: { required: true }
+  keycloak_issuer: { required: true }
+  keycloak_client_id: { required: true }
+  keycloak_client_secret: { required: true }
+  session_jwt_secret: { required: true }
+
+runs:
+  using: composite
+  steps:
+    - name: Ensure database exists
+      shell: bash
+      env:
+        SSH_KEY: ${{ inputs.deploy_ssh_key }}
+        DEPLOY_HOST: ${{ inputs.deploy_host }}
+        DEPLOY_USER: ${{ inputs.deploy_user }}
+        DB_NAME: ${{ inputs.db_name }}
+      run: |
+        set -euo pipefail
+        install -m 600 /dev/null /tmp/deploy_key
+        echo "$SSH_KEY" > /tmp/deploy_key
+        ssh -i /tmp/deploy_key -o StrictHostKeyChecking=accept-new \
+          "${DEPLOY_USER}@${DEPLOY_HOST}" "ensure-db ${DB_NAME}"
+
+    - name: Deploy stack via Komodo
+      shell: bash
+      env:
+        KOMODO_HOST: ${{ inputs.komodo_host }}
+        KOMODO_API_KEY: ${{ inputs.komodo_api_key }}
+        KOMODO_API_SECRET: ${{ inputs.komodo_api_secret }}
+        PROJECT_NAME: ${{ inputs.project_name }}
+        IMAGE_TAG: ${{ inputs.image_tag }}
+        SUBDOMAIN: ${{ inputs.subdomain }}
+        GIT_BRANCH: ${{ inputs.git_branch }}
+        DATABASE_URL: postgresql://brockcsc:${{ inputs.db_password }}@postgres:5432/${{ inputs.db_name }}
+        KEYCLOAK_ISSUER: ${{ inputs.keycloak_issuer }}
+        KEYCLOAK_CLIENT_ID: ${{ inputs.keycloak_client_id }}
+        KEYCLOAK_CLIENT_SECRET: ${{ inputs.keycloak_client_secret }}
+        ADMIN_ROLE: brockcsc-admin
+        SESSION_JWT_SECRET: ${{ inputs.session_jwt_secret }}
+      run: ./deploy/komodo-deploy.sh
+
+    - name: Annotate deployment URL
+      shell: bash
+      env:
+        SUBDOMAIN: ${{ inputs.subdomain }}
+        ENV_NAME: ${{ inputs.env_name }}
+      run: |
+        echo "::notice title=Deployed (${ENV_NAME})::https://${SUBDOMAIN}"
+        {
+          echo "### Deployed :rocket:"
+          echo ""
+          echo "- **Environment:** ${ENV_NAME}"
+          echo "- **URL:** https://${SUBDOMAIN}"
+        } >> "$GITHUB_STEP_SUMMARY"

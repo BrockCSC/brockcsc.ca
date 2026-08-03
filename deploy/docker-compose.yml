@@ -1,7 +1,5 @@
-# Shared template for every environment (prod, dev, branch previews).
-# All the per-environment differences (image tag, hostname, secrets, DB) come
-# in entirely through env vars set on the Komodo Stack resource - this file
-# itself never changes between environments.
+# Shared across every environment - differences come entirely from env vars
+# Komodo sets per Stack (image tag, hostname, secrets, DB).
 networks:
   wayfarer-net:
     external: true
@@ -13,8 +11,7 @@ services:
     restart: unless-stopped
     networks: [wayfarer-net]
     environment:
-      # Server components have no browser origin, so they need the api
-      # container's address directly (client-side code just uses /api/...).
+      # Server components have no browser origin to resolve /api/... against.
       - API_INTERNAL_URL=http://${PROJECT_NAME}-api:3001
     labels:
       - "traefik.enable=true"

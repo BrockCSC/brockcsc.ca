@@ -1,6 +1,5 @@
-// Client-side calls hit `/api/...` relative to the current origin (Traefik
-// path-routes that to the api container). Server components have no origin
-// of their own, so they need the api container's internal Docker DNS name.
+// Server components have no browser origin, so they need the api container's
+// internal Docker DNS name; the client just uses relative /api/... paths.
 const internalBaseUrl = process.env.API_INTERNAL_URL;
 
 export const apiUrl = (path: string): string => {
@@ -20,7 +19,7 @@ export class ApiError extends Error {
 
 export const apiFetch = async <T>(
   path: string,
-  init: RequestInit = {}
+  init: RequestInit = {},
 ): Promise<T> => {
   const response = await fetch(apiUrl(path), {
     credentials: "same-origin",
@@ -29,7 +28,10 @@ export const apiFetch = async <T>(
   });
 
   if (!response.ok) {
-    throw new ApiError(response.status, `${init.method ?? "GET"} ${path} failed`);
+    throw new ApiError(
+      response.status,
+      `${init.method ?? "GET"} ${path} failed`,
+    );
   }
 
   if (response.status === 204) {

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -50,7 +50,7 @@ const getTorontoDateKey = (timestamp: number): string =>
 
 const getTodayStartLabel = (
   nowTimestamp: number,
-  displayTimestamp: number | null
+  displayTimestamp: number | null,
 ): string | null => {
   if (typeof displayTimestamp !== "number") {
     return null;
@@ -77,17 +77,20 @@ export function EventCard({
   const hasImage = Boolean(event.image?.url);
   const imageSrc = event.image?.url || EMPTY_IMAGE;
   const timing =
-    typeof nowTimestamp === "number" ? getEventTiming(event, nowTimestamp) : null;
+    typeof nowTimestamp === "number"
+      ? getEventTiming(event, nowTimestamp)
+      : null;
   const baseStartTimestamp = getEventStartTimestamp(event);
   const displayStartTimestamp =
     variant === "upcoming"
-      ? timing?.nextStartTimestamp ?? baseStartTimestamp
+      ? (timing?.nextStartTimestamp ?? baseStartTimestamp)
       : baseStartTimestamp;
   const todayStartLabel =
     variant === "upcoming" && typeof nowTimestamp === "number"
       ? getTodayStartLabel(nowTimestamp, displayStartTimestamp)
       : null;
-  const recurrenceLabel = variant === "upcoming" ? getRecurrenceLabel(event) : null;
+  const recurrenceLabel =
+    variant === "upcoming" ? getRecurrenceLabel(event) : null;
   const handleEventLinkClick = () => {
     if (typeof window === "undefined") {
       return;
@@ -118,17 +121,25 @@ export function EventCard({
       <div className={`${posterClass} ${!hasImage ? "bg-primary" : ""}`}>
         {hasImage && (
           <div
-            className={`absolute -inset-2 bg-cover bg-center blur-[10px] ${variant === "past" ? "brightness-[0.9] saturate-[0.7]" : "brightness-75"
-              }`}
+            className={`absolute -inset-2 bg-cover bg-center blur-[10px] ${
+              variant === "past"
+                ? "brightness-[0.9] saturate-[0.7]"
+                : "brightness-75"
+            }`}
             style={{ backgroundImage: `url(${imageSrc})` }}
           />
         )}
         <Image
           alt={event.title ?? "Event poster"}
-          className={`absolute inset-0 z-1 object-contain ${hasImage ? "p-1.5" : "p-4 brightness-0 invert"
-            } ${variant === "past" ? "grayscale-[0.2] saturate-[0.75]" : ""}`}
+          className={`absolute inset-0 z-1 object-contain ${
+            hasImage ? "p-1.5" : "p-4 brightness-0 invert"
+          } ${variant === "past" ? "grayscale-[0.2] saturate-[0.75]" : ""}`}
           fill
-          sizes={variant === "past" ? "(max-width: 700px) 100vw, 33vw" : "(max-width: 768px) 100vw, 50vw"}
+          sizes={
+            variant === "past"
+              ? "(max-width: 700px) 100vw, 33vw"
+              : "(max-width: 768px) 100vw, 50vw"
+          }
           src={imageSrc}
           unoptimized
         />
@@ -138,7 +149,13 @@ export function EventCard({
         {variant === "ongoing" && (
           <Badge
             className="mb-2 w-fit"
-            icon={<Activity aria-hidden="true" className="h-3 w-3" strokeWidth={2.25} />}
+            icon={
+              <Activity
+                aria-hidden="true"
+                className="h-3 w-3"
+                strokeWidth={2.25}
+              />
+            }
             variant="destructive"
             size="sm"
           >
@@ -148,7 +165,13 @@ export function EventCard({
         {todayStartLabel && (
           <Badge
             className="mb-2 w-fit"
-            icon={<Clock3 aria-hidden="true" className="h-3 w-3" strokeWidth={2.25} />}
+            icon={
+              <Clock3
+                aria-hidden="true"
+                className="h-3 w-3"
+                strokeWidth={2.25}
+              />
+            }
             size="sm"
             variant="blue"
           >
@@ -157,12 +180,13 @@ export function EventCard({
         )}
 
         <h3
-          className={`m-0 leading-[1.14] ${variant === "ongoing"
+          className={`m-0 leading-[1.14] ${
+            variant === "ongoing"
               ? "text-[1.45rem]"
               : variant === "upcoming"
                 ? "text-[1.45rem]"
                 : "text-[1.18rem] text-foreground/80"
-            }`}
+          }`}
         >
           {event.title ?? "Untitled Event"}
         </h3>
@@ -170,7 +194,9 @@ export function EventCard({
         {event.description && (
           <p
             className={`mt-1 hidden overflow-hidden text-[0.92rem] leading-[1.45] text-muted-foreground min-[701px]:[display:-webkit-box] [-webkit-box-orient:vertical] ${
-              variant === "past" ? "[-webkit-line-clamp:2]" : "[-webkit-line-clamp:3]"
+              variant === "past"
+                ? "[-webkit-line-clamp:2]"
+                : "[-webkit-line-clamp:3]"
             }`}
           >
             {event.description}
@@ -180,7 +206,10 @@ export function EventCard({
         {variant === "past" ? (
           <div className="mt-auto">
             <Button asChild className="max-w-full" size="sm" variant="link">
-              <Link href={`/events/${event.$key}`} onClick={handleEventLinkClick}>
+              <Link
+                href={`/events/${event.$key}`}
+                onClick={handleEventLinkClick}
+              >
                 View Recap
               </Link>
             </Button>
@@ -191,7 +220,13 @@ export function EventCard({
               {recurrenceLabel && (
                 <Badge
                   className="w-fit"
-                  icon={<Repeat aria-hidden="true" className="h-3 w-3" strokeWidth={2.25} />}
+                  icon={
+                    <Repeat
+                      aria-hidden="true"
+                      className="h-3 w-3"
+                      strokeWidth={2.25}
+                    />
+                  }
                   variant="blue"
                   size="sm"
                 >
@@ -200,7 +235,13 @@ export function EventCard({
               )}
               <Badge
                 className="w-fit"
-                icon={<CalendarDays aria-hidden="true" className="h-3 w-3" strokeWidth={2.25} />}
+                icon={
+                  <CalendarDays
+                    aria-hidden="true"
+                    className="h-3 w-3"
+                    strokeWidth={2.25}
+                  />
+                }
                 variant="default"
                 size="sm"
               >
@@ -208,7 +249,13 @@ export function EventCard({
               </Badge>
               <Badge
                 className="w-fit"
-                icon={<Clock3 aria-hidden="true" className="h-3 w-3" strokeWidth={2.25} />}
+                icon={
+                  <Clock3
+                    aria-hidden="true"
+                    className="h-3 w-3"
+                    strokeWidth={2.25}
+                  />
+                }
                 variant="default"
                 size="sm"
               >
@@ -216,7 +263,13 @@ export function EventCard({
               </Badge>
               <Badge
                 className="w-fit"
-                icon={<MapPin aria-hidden="true" className="h-3 w-3" strokeWidth={2.25} />}
+                icon={
+                  <MapPin
+                    aria-hidden="true"
+                    className="h-3 w-3"
+                    strokeWidth={2.25}
+                  />
+                }
                 variant="default"
                 size="sm"
               >
@@ -224,21 +277,31 @@ export function EventCard({
               </Badge>
             </div>
 
-            {displayButton && <div
-              className={
-                variant === "upcoming"
-                  ? "mt-2.5"
-                  : variant === "ongoing"
-                    ? "mt-auto pt-2"
-                    : "mt-auto pt-0 max-[700px]:pt-2"
-              }
-            >
-              <Button asChild className="w-full max-w-full" size="sm" variant="primary">
-                <Link href={`/events/${event.$key}`} onClick={handleEventLinkClick}>
-                  {variant === "ongoing" ? "Happening Now" : "Learn More"}
-                </Link>
-              </Button>
-            </div>}
+            {displayButton && (
+              <div
+                className={
+                  variant === "upcoming"
+                    ? "mt-2.5"
+                    : variant === "ongoing"
+                      ? "mt-auto pt-2"
+                      : "mt-auto pt-0 max-[700px]:pt-2"
+                }
+              >
+                <Button
+                  asChild
+                  className="w-full max-w-full"
+                  size="sm"
+                  variant="primary"
+                >
+                  <Link
+                    href={`/events/${event.$key}`}
+                    onClick={handleEventLinkClick}
+                  >
+                    {variant === "ongoing" ? "Happening Now" : "Learn More"}
+                  </Link>
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -13,7 +13,7 @@ export const crudRouter = (table: string) => {
 
   router.get("/", async (_req, res) => {
     const { rows } = await pool.query(
-      `SELECT id, data FROM ${table} ORDER BY created_at ASC`
+      `SELECT id, data FROM ${table} ORDER BY created_at ASC`,
     );
     res.json(rows.map(rowToRecord));
   });
@@ -21,7 +21,7 @@ export const crudRouter = (table: string) => {
   router.get("/:id", async (req, res) => {
     const { rows } = await pool.query(
       `SELECT id, data FROM ${table} WHERE id = $1`,
-      [req.params.id]
+      [req.params.id],
     );
     if (rows.length === 0) {
       res.status(404).json({ error: "Not found" });
@@ -33,7 +33,7 @@ export const crudRouter = (table: string) => {
   router.post("/", requireAdmin, async (req, res) => {
     const { rows } = await pool.query(
       `INSERT INTO ${table} (data) VALUES ($1) RETURNING id, data`,
-      [req.body]
+      [req.body],
     );
     res.status(201).json(rowToRecord(rows[0]));
   });
@@ -41,7 +41,7 @@ export const crudRouter = (table: string) => {
   router.patch("/:id", requireAdmin, async (req, res) => {
     const { rows } = await pool.query(
       `UPDATE ${table} SET data = data || $1 WHERE id = $2 RETURNING id, data`,
-      [req.body, req.params.id]
+      [req.body, req.params.id],
     );
     if (rows.length === 0) {
       res.status(404).json({ error: "Not found" });
@@ -51,9 +51,10 @@ export const crudRouter = (table: string) => {
   });
 
   router.delete("/:id", requireAdmin, async (req, res) => {
-    const { rowCount } = await pool.query(`DELETE FROM ${table} WHERE id = $1`, [
-      req.params.id,
-    ]);
+    const { rowCount } = await pool.query(
+      `DELETE FROM ${table} WHERE id = $1`,
+      [req.params.id],
+    );
     if (rowCount === 0) {
       res.status(404).json({ error: "Not found" });
       return;

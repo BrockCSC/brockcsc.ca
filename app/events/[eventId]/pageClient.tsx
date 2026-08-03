@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -23,7 +23,7 @@ const EMPTY_IMAGE = "/logo-black.svg";
 
 const getAction = (
   event: EventItem,
-  isPastEvent: boolean
+  isPastEvent: boolean,
 ): { href: string; label: string } | null => {
   if (!isPastEvent && event.signupUrl) {
     return { href: event.signupUrl, label: "Register Now" };
@@ -88,7 +88,7 @@ export default function EventDetailPageClient() {
 
   const recurrenceLabel = useMemo(
     () => (event ? getRecurrenceLabel(event) : null),
-    [event]
+    [event],
   );
   const isPastEvent = useMemo(() => {
     if (!event) {
@@ -100,11 +100,11 @@ export default function EventDetailPageClient() {
   }, [event]);
   const eventStartTimestamp = useMemo(
     () => (event ? getEventStartTimestamp(event) : null),
-    [event]
+    [event],
   );
   const action = useMemo(
     () => (event ? getAction(event, isPastEvent) : null),
-    [event, isPastEvent]
+    [event, isPastEvent],
   );
   const hasRegistrationLink = Boolean(event?.signupUrl || event?.googleFormUrl);
   const hasImage = Boolean(event?.image?.url);
@@ -113,11 +113,15 @@ export default function EventDetailPageClient() {
     () => [
       {
         label: "Date",
-        value: event ? formatEventDateLabel(event, eventStartTimestamp) : "Date TBD",
+        value: event
+          ? formatEventDateLabel(event, eventStartTimestamp)
+          : "Date TBD",
       },
       {
         label: "Time",
-        value: event ? formatEventTimeLabel(event, eventStartTimestamp) : "Time TBD",
+        value: event
+          ? formatEventTimeLabel(event, eventStartTimestamp)
+          : "Time TBD",
       },
       {
         label: "Location",
@@ -128,20 +132,29 @@ export default function EventDetailPageClient() {
         value: event?.presenter || "TBA",
       },
     ],
-    [event, eventStartTimestamp]
+    [event, eventStartTimestamp],
   );
 
   return (
     <main className="min-h-screen bg-white pt-6 pb-16 text-foreground">
       <div>
-        <Button asChild className="h-auto p-0 text-[0.92rem] font-semibold text-muted-foreground" variant="link">
+        <Button
+          asChild
+          className="h-auto p-0 text-[0.92rem] font-semibold text-muted-foreground"
+          variant="link"
+        >
           <Link href="/events">
-            <ChevronLeft aria-hidden="true" className="mr-1 inline-block h-3.5 w-3.5 align-[-1px]" />
+            <ChevronLeft
+              aria-hidden="true"
+              className="mr-1 inline-block h-3.5 w-3.5 align-[-1px]"
+            />
             Back to Events
           </Link>
         </Button>
 
-        {loading && <p className="mt-4 text-muted-foreground">Loading event...</p>}
+        {loading && (
+          <p className="mt-4 text-muted-foreground">Loading event...</p>
+        )}
         {error && <p className="mt-4 text-muted-foreground">{error}</p>}
 
         {!loading && !error && event && (
@@ -166,13 +179,9 @@ export default function EventDetailPageClient() {
             <div>
               {event.dscEvent && (
                 <div className="mb-4 flex flex-wrap gap-2">
-                  <Badge variant="default">
-                    DSC Event
-                  </Badge>
+                  <Badge variant="default">DSC Event</Badge>
                   {recurrenceLabel && (
-                    <Badge variant="blue">
-                      {recurrenceLabel}
-                    </Badge>
+                    <Badge variant="blue">{recurrenceLabel}</Badge>
                   )}
                 </div>
               )}
@@ -191,15 +200,26 @@ export default function EventDetailPageClient() {
                     <h3 className="m-0 text-[0.8rem] uppercase tracking-[0.08em] text-muted-foreground">
                       {card.label}
                     </h3>
-                    <p className="mt-1.5 text-base font-bold text-foreground">{card.value}</p>
+                    <p className="mt-1.5 text-base font-bold text-foreground">
+                      {card.value}
+                    </p>
                   </article>
                 ))}
               </div>
 
               {action ? (
                 <div className="mt-6">
-                  <Button asChild className="max-w-full" size="default" variant="primary">
-                    <Link href={action.href} rel="noopener noreferrer" target="_blank">
+                  <Button
+                    asChild
+                    className="max-w-full"
+                    size="default"
+                    variant="primary"
+                  >
+                    <Link
+                      href={action.href}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
                       {action.label}
                     </Link>
                   </Button>
@@ -208,7 +228,12 @@ export default function EventDetailPageClient() {
 
               {isPastEvent && !action && hasRegistrationLink ? (
                 <div className="mt-6">
-                  <Button className="max-w-full" disabled size="default" variant="secondary">
+                  <Button
+                    className="max-w-full"
+                    disabled
+                    size="default"
+                    variant="secondary"
+                  >
                     Event Ended
                   </Button>
                 </div>
@@ -216,7 +241,10 @@ export default function EventDetailPageClient() {
 
               <p className="mt-4 text-center text-[0.88rem] text-muted-foreground">
                 Questions?{" "}
-                <a className="underline underline-offset-2" href="mailto:brockcsc@gmail.com">
+                <a
+                  className="underline underline-offset-2"
+                  href="mailto:brockcsc@gmail.com"
+                >
                   Contact the organizers
                 </a>
               </p>

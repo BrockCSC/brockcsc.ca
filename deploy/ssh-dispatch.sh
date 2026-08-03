@@ -1,8 +1,5 @@
 #!/bin/sh
-# Forced-command entrypoint for the brockcsc CI deploy key (see authorized_keys
-# on the VPS: command="/opt/wayfarer/brockcsc/ssh-dispatch.sh"). Whatever the
-# SSH client actually asked for lands in SSH_ORIGINAL_COMMAND; only these two
-# exact, fixed scripts can ever run, regardless of what's requested.
+# Forced-command entrypoint for the brockcsc deploy key - only these two fixed scripts can run.
 set -eu
 cmd="${SSH_ORIGINAL_COMMAND:-}"
 action=$(printf '%s' "$cmd" | awk '{print $1}')

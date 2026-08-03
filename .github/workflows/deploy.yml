@@ -61,8 +61,12 @@ jobs:
           echo "db_name=${DB_NAME}" >> "$GITHUB_OUTPUT"
           echo "git_branch=${GIT_BRANCH}" >> "$GITHUB_OUTPUT"
 
-  build:
+  checks:
     needs: context
+    uses: ./.github/workflows/checks.yml
+
+  build:
+    needs: [context, checks]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -108,57 +112,81 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  provision-db:
-    needs: context
+  deploy-prod:
+    needs: [context, build]
+    if: needs.context.outputs.env_name == 'prod'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/deploy-stack
+        with:
+          project_name: ${{ needs.context.outputs.project_name }}
+          image_tag: ${{ needs.context.outputs.image_tag }}
+          subdomain: ${{ needs.context.outputs.subdomain }}
+          git_branch: ${{ needs.context.outputs.git_branch }}
+          db_name: ${{ needs.context.outputs.db_name }}
+          env_name: ${{ needs.context.outputs.env_name }}
+          komodo_host: ${{ secrets.KOMODO_HOST }}
+          komodo_api_key: ${{ secrets.KOMODO_API_KEY }}
+          komodo_api_secret: ${{ secrets.KOMODO_API_SECRET }}
+          deploy_ssh_key: ${{ secrets.BROCKCSC_DEPLOY_SSH_KEY }}
+          deploy_host: ${{ secrets.BROCKCSC_DEPLOY_HOST }}
+          deploy_user: ${{ secrets.BROCKCSC_DEPLOY_USER }}
+          db_password: ${{ secrets.BROCKCSC_DB_PASSWORD }}
+          keycloak_issuer: ${{ secrets.BROCKCSC_KEYCLOAK_ISSUER }}
+          keycloak_client_id: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_ID }}
+          keycloak_client_secret: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_SECRET }}
+          session_jwt_secret: ${{ secrets.BROCKCSC_SESSION_JWT_SECRET }}
+
+  deploy-dev:
+    needs: [context, build]
+    if: needs.context.outputs.env_name == 'dev'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/deploy-stack
+        with:
+          project_name: ${{ needs.context.outputs.project_name }}
+          image_tag: ${{ needs.context.outputs.image_tag }}
+          subdomain: ${{ needs.context.outputs.subdomain }}
+          git_branch: ${{ needs.context.outputs.git_branch }}
+          db_name: ${{ needs.context.outputs.db_name }}
+          env_name: ${{ needs.context.outputs.env_name }}
+          komodo_host: ${{ secrets.KOMODO_HOST }}
+          komodo_api_key: ${{ secrets.KOMODO_API_KEY }}
+          komodo_api_secret: ${{ secrets.KOMODO_API_SECRET }}
+          deploy_ssh_key: ${{ secrets.BROCKCSC_DEPLOY_SSH_KEY }}
+          deploy_host: ${{ secrets.BROCKCSC_DEPLOY_HOST }}
+          deploy_user: ${{ secrets.BROCKCSC_DEPLOY_USER }}
+          db_password: ${{ secrets.BROCKCSC_DB_PASSWORD }}
+          keycloak_issuer: ${{ secrets.BROCKCSC_KEYCLOAK_ISSUER }}
+          keycloak_client_id: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_ID }}
+          keycloak_client_secret: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_SECRET }}
+          session_jwt_secret: ${{ secrets.BROCKCSC_SESSION_JWT_SECRET }}
 
-      - name: Ensure database exists
-        env:
-          SSH_KEY: ${{ secrets.BROCKCSC_DEPLOY_SSH_KEY }}
-          DEPLOY_HOST: ${{ secrets.BROCKCSC_DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.BROCKCSC_DEPLOY_USER }}
-          DB_NAME: ${{ needs.context.outputs.db_name }}
-        run: |
-          set -euo pipefail
-          install -m 600 /dev/null /tmp/deploy_key
-          echo "$SSH_KEY" > /tmp/deploy_key
-          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=accept-new \
-            "${DEPLOY_USER}@${DEPLOY_HOST}" "ensure-db ${DB_NAME}"
-
-  deploy:
-    needs: [context, build, provision-db]
+  deploy-preview:
+    needs: [context, build]
+    if: needs.context.outputs.env_name == 'preview'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Deploy stack via Komodo
-        env:
-          KOMODO_HOST: ${{ secrets.KOMODO_HOST }}
-          KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
-          KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
-          PROJECT_NAME: ${{ needs.context.outputs.project_name }}
-          IMAGE_TAG: ${{ needs.context.outputs.image_tag }}
-          SUBDOMAIN: ${{ needs.context.outputs.subdomain }}
-          GIT_BRANCH: ${{ needs.context.outputs.git_branch }}
-          DATABASE_URL: postgresql://brockcsc:${{ secrets.BROCKCSC_DB_PASSWORD }}@postgres:5432/${{ needs.context.outputs.db_name }}
-          KEYCLOAK_ISSUER: ${{ secrets.BROCKCSC_KEYCLOAK_ISSUER }}
-          KEYCLOAK_CLIENT_ID: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_ID }}
-          KEYCLOAK_CLIENT_SECRET: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_SECRET }}
-          ADMIN_ROLE: brockcsc-admin
-          SESSION_JWT_SECRET: ${{ secrets.BROCKCSC_SESSION_JWT_SECRET }}
-        run: ./deploy/komodo-deploy.sh
-
-      - name: Annotate deployment URL
-        env:
-          SUBDOMAIN: ${{ needs.context.outputs.subdomain }}
-          ENV_NAME: ${{ needs.context.outputs.env_name }}
-        run: |
-          echo "::notice title=Deployed (${ENV_NAME})::https://${SUBDOMAIN}"
-          {
-            echo "### Deployed :rocket:"
-            echo ""
-            echo "- **Environment:** ${ENV_NAME}"
-            echo "- **URL:** https://${SUBDOMAIN}"
-          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: ./.github/actions/deploy-stack
+        with:
+          project_name: ${{ needs.context.outputs.project_name }}
+          image_tag: ${{ needs.context.outputs.image_tag }}
+          subdomain: ${{ needs.context.outputs.subdomain }}
+          git_branch: ${{ needs.context.outputs.git_branch }}
+          db_name: ${{ needs.context.outputs.db_name }}
+          env_name: ${{ needs.context.outputs.env_name }}
+          komodo_host: ${{ secrets.KOMODO_HOST }}
+          komodo_api_key: ${{ secrets.KOMODO_API_KEY }}
+          komodo_api_secret: ${{ secrets.KOMODO_API_SECRET }}
+          deploy_ssh_key: ${{ secrets.BROCKCSC_DEPLOY_SSH_KEY }}
+          deploy_host: ${{ secrets.BROCKCSC_DEPLOY_HOST }}
+          deploy_user: ${{ secrets.BROCKCSC_DEPLOY_USER }}
+          db_password: ${{ secrets.BROCKCSC_DB_PASSWORD }}
+          keycloak_issuer: ${{ secrets.BROCKCSC_KEYCLOAK_ISSUER }}
+          keycloak_client_id: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_ID }}
+          keycloak_client_secret: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_SECRET }}
+          session_jwt_secret: ${{ secrets.BROCKCSC_SESSION_JWT_SECRET }}

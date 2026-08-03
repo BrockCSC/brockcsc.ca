@@ -1,12 +1,8 @@
-'use client';
+"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import {
-  fetchAllEvents,
-  type EventRecord,
-  type WithKey,
-} from "@/lib/api";
+import { fetchAllEvents, type EventRecord, type WithKey } from "@/lib/api";
 import { classifyEventsByTiming } from "@/lib/events/classify";
 import { getEventStartTimestamp } from "@/lib/events/schedule";
 
@@ -109,7 +105,7 @@ export default function EventsPageClient() {
 
   const { ongoing, upcoming, past } = useMemo(
     () => classifyEventsByTiming(events, nowTimestamp),
-    [events, nowTimestamp]
+    [events, nowTimestamp],
   );
 
   const pastGroups = useMemo(() => {
@@ -191,7 +187,9 @@ export default function EventsPageClient() {
         </p>
 
         {error && <p className="mb-4 text-muted-foreground">{error}</p>}
-        {loading && <p className="mb-4 text-muted-foreground">Loading past events...</p>}
+        {loading && (
+          <p className="mb-4 text-muted-foreground">Loading past events...</p>
+        )}
         {!loading && !error && pastGroups.length === 0 && (
           <p className="mb-4 text-muted-foreground">No past events found.</p>
         )}
@@ -210,7 +208,6 @@ export default function EventsPageClient() {
             </section>
           ))}
         </div>
-
       </section>
     </main>
   );

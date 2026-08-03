@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
-# Tears down branch-preview stacks whose branch is gone, or hasn't had a
-# commit in the last 3 days. Run on a daily schedule.
-#
-# Required env vars:
-#   KOMODO_HOST, KOMODO_API_KEY, KOMODO_API_SECRET
-#   GH_TOKEN, GITHUB_REPOSITORY
-#   BROCKCSC_DEPLOY_SSH_KEY, BROCKCSC_DEPLOY_HOST, BROCKCSC_DEPLOY_USER
+# Tears down branch-preview stacks whose branch is gone or stale (no commit in 3 days).
 set -euo pipefail
 
 STALE_SECONDS=$((3 * 24 * 60 * 60))

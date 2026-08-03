@@ -12,7 +12,7 @@ export type EventTimingGroups = {
 
 export const classifyEventsByTiming = (
   events: EventItem[],
-  nowTimestamp: number
+  nowTimestamp: number,
 ): EventTimingGroups => {
   const ongoing: EventItem[] = [];
   const upcoming: EventItem[] = [];

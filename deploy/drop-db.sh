@@ -1,7 +1,5 @@
 #!/bin/sh
-# Drops a branch-preview database. Deliberately restricted to the
-# brockcsc_preview_* prefix so this can never touch prod/dev, even if a
-# caller passes a wrong name.
+# Restricted to brockcsc_preview_* so this can never touch prod/dev.
 set -eu
 DB_NAME="${1:?usage: drop-db.sh <db_name>}"
 

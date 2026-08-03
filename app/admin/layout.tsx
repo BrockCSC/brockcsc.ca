@@ -11,7 +11,11 @@ const adminTabs = [
   { name: "Executives Management", href: "/admin/execs" },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
@@ -44,7 +48,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   if (loading) {
-    return <div className="py-32 text-center text-lg font-bold">Authenticating...</div>;
+    return (
+      <div className="py-32 text-center text-lg font-bold">
+        Authenticating...
+      </div>
+    );
   }
 
   // Admin layout with navigation tabs and content area
@@ -63,7 +71,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   key={tab.name}
                   href={tab.href}
                   className={`px-4 py-2 rounded-[12px] font-semibold border-2 border-transparent transition-colors ${
-                    isActive ? "border-[#9A4440] text-[#9A4440] bg-[#fff1f0]" : "text-black hover:bg-neutral-100"
+                    isActive
+                      ? "border-[#9A4440] text-[#9A4440] bg-[#fff1f0]"
+                      : "text-black hover:bg-neutral-100"
                   }`}
                 >
                   {tab.name}
@@ -80,9 +90,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
           </div>
         </div>
-        <div className="p-8">
-          {children}
-        </div>
+        <div className="p-8">{children}</div>
       </div>
     </div>
   );

@@ -23,7 +23,7 @@ export const createExec = async (exec: ExecRecord): Promise<void> => {
 
 export const updateExec = async (
   key: string,
-  exec: Partial<ExecRecord>
+  exec: Partial<ExecRecord>,
 ): Promise<void> => {
   await apiFetch(`/api/execs/${key}`, {
     method: "PATCH",
@@ -72,7 +72,7 @@ export const fetchPastEvents = async (): Promise<WithKey<EventRecord>[]> => {
 };
 
 export const fetchEventById = async (
-  eventId: string
+  eventId: string,
 ): Promise<WithKey<EventRecord> | null> => {
   try {
     return await apiFetch<WithKey<EventRecord>>(`/api/events/${eventId}`);
@@ -82,7 +82,7 @@ export const fetchEventById = async (
 };
 
 export const fetchEventTitleByIdServer = async (
-  eventId: string
+  eventId: string,
 ): Promise<string | null> => {
   if (!eventId) return null;
   const event = await fetchEventById(eventId);
@@ -92,7 +92,7 @@ export const fetchEventTitleByIdServer = async (
 
 export const editEvent = async (
   eventId: string,
-  event: Partial<EventRecord>
+  event: Partial<EventRecord>,
 ): Promise<void> => {
   await apiFetch(`/api/events/${eventId}`, {
     method: "PATCH",
@@ -101,7 +101,10 @@ export const editEvent = async (
 };
 
 export const createEvent = async (event: EventRecord): Promise<void> => {
-  await apiFetch("/api/events", { method: "POST", body: JSON.stringify(event) });
+  await apiFetch("/api/events", {
+    method: "POST",
+    body: JSON.stringify(event),
+  });
 };
 
 export const deleteEvent = async (eventId: string): Promise<void> => {
@@ -113,5 +116,5 @@ export const fetchAllDscCards = async (): Promise<WithKey<DscCardRecord>[]> =>
 
 export const fetchAllFoodItems = async (): Promise<WithKey<FoodRecord>[]> =>
   (await apiFetch<WithKey<FoodRecord>[]>("/api/food")).sort((a, b) =>
-    (a.section ?? "").localeCompare(b.section ?? "")
+    (a.section ?? "").localeCompare(b.section ?? ""),
   );

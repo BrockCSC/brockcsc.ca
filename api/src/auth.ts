@@ -76,7 +76,7 @@ export const handleCallback = async (req: Request, res: Response) => {
         redirect_uri: redirectUri,
         code: String(code),
       }),
-    }
+    },
   );
 
   if (!tokenResponse.ok) {
@@ -143,7 +143,11 @@ export const handleMe = (req: Request, res: Response) => {
   res.json(user);
 };
 
-export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+export const requireAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const user = getSessionUser(req);
   if (!user) {
     res.status(401).json({ error: "Not authenticated" });

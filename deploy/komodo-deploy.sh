@@ -1,13 +1,6 @@
 #!/usr/bin/env bash
-# Create-or-update a Komodo Stack for one environment (prod/dev/preview), then
-# trigger a deploy. All the environment-specific values come in as env vars so
-# this script is identical across environments; only the caller differs.
-#
-# Required env vars:
-#   KOMODO_HOST, KOMODO_API_KEY, KOMODO_API_SECRET
-#   PROJECT_NAME, IMAGE_TAG, SUBDOMAIN, GIT_BRANCH, DATABASE_URL
-#   KEYCLOAK_ISSUER, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET, ADMIN_ROLE
-#   SESSION_JWT_SECRET
+# Create-or-update + deploy a Komodo Stack for one environment. Identical
+# across prod/dev/preview; only the env vars the caller sets differ.
 set -euo pipefail
 
 for v in KOMODO_HOST KOMODO_API_KEY KOMODO_API_SECRET PROJECT_NAME IMAGE_TAG \

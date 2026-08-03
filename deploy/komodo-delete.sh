@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
-# Deletes a Komodo Stack (used for branch-preview cleanup). Not used for
-# prod/dev, which should never be deleted by CI.
-#
-# Required env vars: KOMODO_HOST, KOMODO_API_KEY, KOMODO_API_SECRET, PROJECT_NAME
+# Deletes a Komodo Stack. Only for branch-preview cleanup; never call this for prod/dev.
 set -euo pipefail
 
 for v in KOMODO_HOST KOMODO_API_KEY KOMODO_API_SECRET PROJECT_NAME; do
