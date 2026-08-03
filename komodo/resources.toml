@@ -264,7 +264,8 @@ const branches = (await ghFetch("/branches?per_page=100")) as {
   name: string;
 }[];
 const slugToBranch = new Map<string, string>();
-for (const branch of branches) slugToBranch.set(slugify(branch.name), branch.name);
+for (const branch of branches)
+  slugToBranch.set(slugify(branch.name), branch.name);
 
 const stacks = (await komodo.read("ListStacks", {})) as { name: string }[];
 const now = Date.now();
@@ -288,8 +289,11 @@ try {
     } else {
       const commit = (await ghFetch(
         `/commits/${encodeURIComponent(branch)}`,
-      )) as { commit: { committer?: { date: string }; author?: { date: string } } };
-      const commitDate = commit.commit.committer?.date ?? commit.commit.author?.date;
+      )) as {
+        commit: { committer?: { date: string }; author?: { date: string } };
+      };
+      const commitDate =
+        commit.commit.committer?.date ?? commit.commit.author?.date;
       const ageMs = now - new Date(commitDate ?? 0).getTime();
       if (ageMs > STALE_MS) {
         console.log(
