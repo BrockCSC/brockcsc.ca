@@ -53,10 +53,12 @@ export default function EventModal({
   const [signupUrl, setSignupUrl] = useState(selectedEvent?.signupUrl ?? "");
 
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
+    setSaveError(null);
 
     try {
       const startDate = extractDatePart(startDatetime);
@@ -103,6 +105,7 @@ export default function EventModal({
       setShowModal(false);
     } catch (error) {
       console.error("Failed to save event:", error);
+      setSaveError("Couldn't save this event. Please try again in a moment.");
     } finally {
       setIsSaving(false);
     }
@@ -225,6 +228,11 @@ export default function EventModal({
             onChange={(e) => setSignupUrl(e.target.value)}
           />
         </div>
+        {saveError && (
+          <p className="mb-4 text-sm font-semibold text-red-600">
+            {saveError}
+          </p>
+        )}
         <div className="flex gap-4">
           <Button variant="primary" type="submit" disabled={isSaving}>
             {isSaving
