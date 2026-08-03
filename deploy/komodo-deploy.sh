@@ -49,7 +49,7 @@ ENVIRONMENT=$(jq -n \
 
 CONFIG=$(jq -n \
   --arg server "wayfarerbx-vps" \
-  --arg repo "BrockCSC/brockcsc.ca" \
+  --arg repo "BrockCSC/website" \
   --arg branch "$GIT_BRANCH" \
   --arg environment "$ENVIRONMENT" \
   '{
