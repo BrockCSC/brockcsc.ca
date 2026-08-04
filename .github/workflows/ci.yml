@@ -77,7 +77,6 @@ jobs:
           VAL_BROCKCSC_KEYCLOAK_CLIENT_ID: ${{ vars.BROCKCSC_KEYCLOAK_CLIENT_ID }}
           VAL_BROCKCSC_KEYCLOAK_CLIENT_SECRET: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_SECRET }}
           VAL_BROCKCSC_SESSION_JWT_SECRET: ${{ secrets.BROCKCSC_SESSION_JWT_SECRET }}
-          VAL_GITHUB_TOKEN: ${{ secrets.BROCKCSC_PREVIEW_SWEEP_TOKEN }}
         run: |
           # Fails harmlessly (409) once the variable already exists - to
           # rotate a value, delete the Variable in Komodo first.
@@ -94,7 +93,6 @@ jobs:
           sync_var BROCKCSC_KEYCLOAK_CLIENT_ID "$VAL_BROCKCSC_KEYCLOAK_CLIENT_ID" false
           sync_var BROCKCSC_KEYCLOAK_CLIENT_SECRET "$VAL_BROCKCSC_KEYCLOAK_CLIENT_SECRET" true
           sync_var BROCKCSC_SESSION_JWT_SECRET "$VAL_BROCKCSC_SESSION_JWT_SECRET" true
-          sync_var GITHUB_TOKEN "$VAL_GITHUB_TOKEN" true
 
       - name: Trigger Komodo deploy
         env:

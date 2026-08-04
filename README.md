@@ -56,11 +56,7 @@ Every push runs `.github/workflows/ci.yml`'s checks, then waits for the matching
 
 Komodo resources (`Build`, `Stack`s, `Action`s) are declared in `komodo/resources.toml`. `komodo/actions/*.ts` are the human-readable source for the two Actions — their actual (identical) contents are embedded in `resources.toml`'s `file_contents` fields, since Komodo can't include external files; keep both in sync by hand when editing.
 
-### One-time setup
-
-In GitHub repo settings, add one secret beyond the existing `BROCKCSC_*`/`KOMODO_*` ones: `BROCKCSC_PREVIEW_SWEEP_TOKEN`, a fine-grained PAT scoped to just this repo with read-only Contents access (used by the preview-sweep schedule to list branches/commits - it runs independently of any GitHub Actions run, so it can't use the workflow's own ephemeral token).
-
-Nothing else - no Komodo UI setup, no registry credential (the Build and every Stack run on the same server, `wayfarerbx-vps`, so the built image never needs to leave that Docker daemon).
+There's no manual setup at all - no Komodo UI clicking, no registry credential (Build and every Stack run on the same server, so the image never leaves that Docker daemon), no GitHub PAT (`preview-sweep`'s branch/commit lookups hit GitHub's public, unauthenticated API - this repo is public, and a once-daily job is nowhere near the 60 req/hour unauthenticated rate limit). The whole pipeline bootstraps itself from a push once `KOMODO_API_KEY`/`KOMODO_API_SECRET` are in GitHub secrets.
 
 Deploys always go through `komodo/actions/deploy.ts` (dispatched by CI after review approval) — the Stack webhooks in `resources.toml` are deliberately `webhook_enabled = false`, since a raw git-push webhook would deploy before the GitHub review gate approves.
 

@@ -233,10 +233,7 @@ const schemaSlug = (slug: string): string => slug.replace(/-/g, "_");
 
 const ghFetch = async (path: string) => {
   const res = await fetch(`https://api.github.com/repos/${REPO}${path}`, {
-    headers: {
-      Authorization: `Bearer [[GITHUB_TOKEN]]`,
-      Accept: "application/vnd.github+json",
-    },
+    headers: { Accept: "application/vnd.github+json" },
   });
   if (!res.ok) {
     throw new Error(`GitHub API ${path} failed: ${res.status}`);
