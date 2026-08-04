@@ -52,17 +52,15 @@ The dev server runs at [http://localhost:3000](http://localhost:3000). Migration
 
 ## Deployment
 
-Every push runs `.github/workflows/ci.yml`'s checks, then waits for the matching [GitHub Environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)'s required reviewers to approve (`dev` for any branch, `uat` for `main`, `production` for version tags). Approval triggers a Komodo Action (`komodo/actions/deploy.ts`) that builds the image **on the VPS itself** and deploys it — GitHub Actions never builds or pushes a Docker image or touches app secrets; it only holds `KOMODO_API_KEY`/`KOMODO_API_SECRET`.
+Every push runs `.github/workflows/ci.yml`'s checks, then waits for the matching [GitHub Environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)'s required reviewers to approve (`dev` for any branch, `uat` for `main`, `production` for version tags). On approval, the `deploy` job upserts the app secrets into Komodo as Variables (idempotent - a no-op once they already exist) and triggers a Komodo Action (`komodo/actions/deploy.ts`) that builds the image **on the VPS itself** and deploys it. GitHub Actions never builds or pushes a Docker image; the only long-lived GitHub secrets are `KOMODO_API_KEY`/`KOMODO_API_SECRET` plus the app secrets it forwards on to Komodo.
 
 Komodo resources (`Build`, `Stack`s, `Action`s) are declared in `komodo/resources.toml` and kept in sync from this repo by a `ResourceSync`. `komodo/actions/*.ts` are the human-readable source for the two Actions — their actual (identical) contents are embedded in `resources.toml`'s `file_contents` fields, since Komodo can't include external files; keep both in sync by hand when editing.
 
-### One-time Komodo setup
+### One-time setup
 
-Before the first sync, in the Komodo UI:
+In GitHub repo settings, add one secret beyond the existing `BROCKCSC_*`/`KOMODO_*` ones: `BROCKCSC_PREVIEW_SWEEP_TOKEN`, a fine-grained PAT scoped to just this repo with read-only Contents access (used by the preview-sweep schedule to list branches/commits - it runs independently of any GitHub Actions run, so it can't use the workflow's own ephemeral token).
 
-1. Create Variables (Settings → Variables), marking secrets as such: `BROCKCSC_DB_PASSWORD`, `BROCKCSC_KEYCLOAK_ISSUER`, `BROCKCSC_KEYCLOAK_CLIENT_ID`, `BROCKCSC_KEYCLOAK_CLIENT_SECRET`, `BROCKCSC_SESSION_JWT_SECRET`, `GITHUB_TOKEN` (a PAT with read access to list branches/commits, used only by the preview-sweep schedule).
-2. Confirm a `ghcr.io` registry account named `brockcsc` exists in Komodo Core's docker registry config (a GitHub PAT with `write:packages`) — `komodo/resources.toml`'s `[[build]]` pushes there.
-3. Create a `ResourceSync` pointed at this repo (`komodo/resources.toml`), or let the one declared in the TOML itself pick it up once applied manually the first time.
+In the Komodo UI, create a `ResourceSync` pointed at this repo (`komodo/resources.toml`). No registry credential is needed — the Build and every Stack run on the same server (`wayfarerbx-vps`), so the built image never needs to leave that Docker daemon.
 
 Deploys always go through `komodo/actions/deploy.ts` (dispatched by CI after review approval) — the Stack webhooks in `resources.toml` are deliberately `webhook_enabled = false`, since a raw git-push webhook would deploy before the GitHub review gate approves.
 

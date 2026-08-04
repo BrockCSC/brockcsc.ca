@@ -1,20 +1,13 @@
-# Declarative Komodo config, synced by a ResourceSync pointed at this repo.
-# Field reference: https://komo.do/docs/automate/sync-resources
+# Synced by a ResourceSync pointed at this repo. Field reference:
+# https://komo.do/docs/automate/sync-resources
 #
-# What's NOT declared here, on purpose:
-# - Server "wayfarerbx-vps" and Builder "wayfarerbx-vps" - pre-existing
-#   platform resources shared with other wayfarerbx services, not owned by
-#   this repo.
-# - brockcsc-pr-* preview stacks - created/destroyed dynamically per branch
-#   by komodo/actions/deploy.ts and komodo/actions/preview-sweep.ts, since
-#   their names depend on the branch slug.
-#
-# Secrets referenced via [[VAR_NAME]] below must be created as Komodo
-# Variables (Settings -> Variables) before the first sync - see README.md.
+# Not declared here: Server/Builder "wayfarerbx-vps" (pre-existing, shared
+# with other wayfarerbx services), and brockcsc-pr-* preview stacks
+# (created dynamically per branch by komodo/actions/deploy.ts).
 
 [[build]]
 name = "brockcsc"
-description = "Builds the brockcsc.ca web app image and pushes it to ghcr.io."
+description = "Builds the brockcsc.ca web app image."
 tags = ["brockcsc"]
 [build.config]
 builder = "wayfarerbx-vps"
@@ -28,11 +21,6 @@ include_commit_tag = true
 include_latest_tag = false
 include_version_tags = false
 webhook_enabled = false
-image_registry.type = "Standard"
-[build.config.image_registry.params]
-domain = "ghcr.io"
-account = "brockcsc"
-organization = "BrockCSC"
 
 ##
 
@@ -61,8 +49,6 @@ KEYCLOAK_CLIENT_ID=[[BROCKCSC_KEYCLOAK_CLIENT_ID]]
 KEYCLOAK_CLIENT_SECRET=[[BROCKCSC_KEYCLOAK_CLIENT_SECRET]]
 SESSION_JWT_SECRET=[[BROCKCSC_SESSION_JWT_SECRET]]
 """
-# IMAGE_TAG is set per-deploy by komodo/actions/deploy.ts (UpdateStack),
-# since it changes on every push - the value here is just a safe fallback.
 
 ##
 
@@ -105,8 +91,7 @@ REF=refs/heads/main
 SHA=
 """
 file_contents = '''
-// Kept in sync by hand with komodo/actions/deploy.ts in the repo - see that
-// file for the commented explanation of what this does.
+// Kept in sync by hand with komodo/actions/deploy.ts.
 
 const VPS_HOST = "129-153-49-190.sslip.io";
 const REPO = "BrockCSC/website";
@@ -230,8 +215,7 @@ schedule = "at 09:00 am"
 schedule_format = "English"
 schedule_enabled = true
 file_contents = '''
-// Kept in sync by hand with komodo/actions/preview-sweep.ts in the repo -
-// see that file for the commented explanation of what this does.
+// Kept in sync by hand with komodo/actions/preview-sweep.ts.
 
 import { Client } from "npm:pg@8";
 
@@ -330,9 +314,7 @@ webhook_enabled = true
 
 ##
 
-# No Alerter is declared yet - there is currently no notification channel
-# (Discord/Slack webhook, email, etc.) configured for this project. Add one
-# in the Komodo UI, then declare it here, eg:
+# No Alerter yet - add a notification channel in the Komodo UI, then:
 #
 # [[alerter]]
 # name = "brockcsc-alerts"

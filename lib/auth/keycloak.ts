@@ -53,8 +53,7 @@ export const exchangeCredentials = async (
     access_token: string;
   };
 
-  // Token comes straight from Keycloak over TLS via a confidential client,
-  // so we don't need to re-verify the signature here.
+  // Not re-verifying: token comes straight from Keycloak over TLS.
   const payload = jwt.decode(access_token) as KeycloakTokenPayload | null;
   if (!payload) {
     return null;

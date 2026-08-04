@@ -1,13 +1,5 @@
-// Komodo Action "brockcsc-deploy". Source of truth is the copy embedded in
-// resources.toml's [[action]] file_contents - Komodo doesn't support
-// including external files, so this .ts file is kept here purely for
-// human review/diffing and must be kept in sync by hand.
-//
-// Triggered by .github/workflows/ci.yml's `deploy` job, which only runs
-// after the matching GitHub Environment's required reviewers approve.
-// Arguments (key_value format, see resources.toml):
-//   REF - full git ref, eg refs/heads/main, refs/tags/v1.2.3, refs/heads/some-branch
-//   SHA - full commit sha being deployed
+// Actual source of truth is the copy embedded in resources.toml's
+// [[action]] file_contents - keep both in sync by hand.
 
 const VPS_HOST = "129-153-49-190.sslip.io";
 const REPO = "BrockCSC/website";
@@ -56,8 +48,6 @@ console.log(
   `Deploying ${projectName} (${envName}) from ${branch} -> https://${subdomain}`,
 );
 
-// 1. Point the shared Build at this branch/commit and build it. `execute`
-// blocks until the build finishes (same semantics as a Procedure stage).
 await komodo.write("UpdateBuild", {
   id: "brockcsc",
   config: { branch },
@@ -70,8 +60,6 @@ if (!buildUpdate.success) {
 
 const imageTag = buildUpdate.commit_hash || sha || "latest";
 
-// 2. Upsert the Stack. uat/prod already exist (declared in resources.toml);
-// preview stacks are created here on first deploy of a branch.
 const databaseUrl = `postgresql://brockcsc:[[BROCKCSC_DB_PASSWORD]]@postgres:5432/brockcsc`;
 const environment = [
   `IMAGE_TAG=${imageTag}`,
@@ -111,8 +99,6 @@ if (exists) {
   await komodo.write("CreateStack", { name: projectName, config });
 }
 
-// 3. Deploy. The app creates its own DB schema on boot (scripts/migrate.mjs
-// in the Docker image's CMD) - nothing to provision here.
 const deployUpdate = await komodo.execute("DeployStack", {
   stack: projectName,
 });

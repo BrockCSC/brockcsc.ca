@@ -1,9 +1,6 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-// Contract for how environments/schemas are provisioned: see README.md.
-// Migrations run via `scripts/migrate.mjs`, not here — see that file for why.
-
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
   throw new Error("DATABASE_URL env var is not set.");

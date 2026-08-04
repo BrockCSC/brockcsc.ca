@@ -6,7 +6,8 @@ networks:
 
 services:
   app:
-    image: ghcr.io/brockcsc/brockcsc-ca:${IMAGE_TAG}
+    image: brockcsc-ca:${IMAGE_TAG}
+    pull_policy: never
     container_name: ${PROJECT_NAME}-app
     restart: unless-stopped
     networks: [wayfarer-net]

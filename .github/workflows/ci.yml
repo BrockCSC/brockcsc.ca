@@ -1,10 +1,5 @@
 name: CI
 
-# Only `push` (not `pull_request`) - GitHub matches check runs to a PR by
-# commit SHA regardless of which event triggered them, so a push-triggered
-# run still shows up on the PR. Adding `pull_request` back would just run
-# `checks` twice per commit. This assumes branches are pushed to this repo
-# directly (not forks) - true for this project today.
 on:
   push:
     branches: ["**"]
@@ -37,11 +32,6 @@ jobs:
     steps:
       - id: ctx
         run: |
-          # Display-only: the canonical env_name/subdomain/branch/schema
-          # computation lives in komodo/actions/deploy.ts, which is the
-          # source of truth. This just derives what to show in the GitHub
-          # Environment / deployment URL, using the same slug rule -
-          # keep in sync with slugify() in komodo/actions/deploy.ts.
           VPS_HOST="129-153-49-190.sslip.io"
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             echo "env_name=production" >> "$GITHUB_OUTPUT"
@@ -58,12 +48,39 @@ jobs:
   deploy:
     needs: context
     runs-on: ubuntu-latest
-    # dev/uat/production each require reviewers in repo settings - the job
-    # waits here until someone approves. See README.md "One-time Komodo setup".
     environment:
       name: ${{ needs.context.outputs.env_name }}
       url: ${{ needs.context.outputs.url }}
     steps:
+      - name: Sync GitHub secrets to Komodo Variables
+        env:
+          KOMODO_HOST: ${{ vars.KOMODO_HOST }}
+          KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
+          KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
+          VAL_BROCKCSC_DB_PASSWORD: ${{ secrets.BROCKCSC_DB_PASSWORD }}
+          VAL_BROCKCSC_KEYCLOAK_ISSUER: ${{ vars.BROCKCSC_KEYCLOAK_ISSUER }}
+          VAL_BROCKCSC_KEYCLOAK_CLIENT_ID: ${{ vars.BROCKCSC_KEYCLOAK_CLIENT_ID }}
+          VAL_BROCKCSC_KEYCLOAK_CLIENT_SECRET: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_SECRET }}
+          VAL_BROCKCSC_SESSION_JWT_SECRET: ${{ secrets.BROCKCSC_SESSION_JWT_SECRET }}
+          VAL_GITHUB_TOKEN: ${{ secrets.BROCKCSC_PREVIEW_SWEEP_TOKEN }}
+        run: |
+          # Fails harmlessly (409) once the variable already exists - to
+          # rotate a value, delete the Variable in Komodo first.
+          sync_var() {
+            jq -n --arg name "$1" --arg value "$2" --argjson is_secret "$3" \
+              '{type:"CreateVariable", params:{name:$name, value:$value, is_secret:$is_secret}}' |
+              curl -s -X POST "$KOMODO_HOST/write" \
+                -H "Content-Type: application/json" -H "x-api-key: $KOMODO_API_KEY" -H "x-api-secret: $KOMODO_API_SECRET" \
+                -d @- > /dev/null
+          }
+
+          sync_var BROCKCSC_DB_PASSWORD "$VAL_BROCKCSC_DB_PASSWORD" true
+          sync_var BROCKCSC_KEYCLOAK_ISSUER "$VAL_BROCKCSC_KEYCLOAK_ISSUER" false
+          sync_var BROCKCSC_KEYCLOAK_CLIENT_ID "$VAL_BROCKCSC_KEYCLOAK_CLIENT_ID" false
+          sync_var BROCKCSC_KEYCLOAK_CLIENT_SECRET "$VAL_BROCKCSC_KEYCLOAK_CLIENT_SECRET" true
+          sync_var BROCKCSC_SESSION_JWT_SECRET "$VAL_BROCKCSC_SESSION_JWT_SECRET" true
+          sync_var GITHUB_TOKEN "$VAL_GITHUB_TOKEN" true
+
       - name: Trigger Komodo deploy
         env:
           KOMODO_HOST: ${{ vars.KOMODO_HOST }}

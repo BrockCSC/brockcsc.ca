@@ -38,9 +38,6 @@ export const getSessionUser = (req: NextRequest): SessionUser | null => {
   }
 };
 
-// Every session cookie is already only issued to a Keycloak user holding
-// ADMIN_ROLE (see keycloak.ts exchangeCredentials + the login route), but we
-// re-check the role here too rather than trusting cookie possession alone.
 export const requireAdmin = (req: NextRequest): SessionUser | null => {
   const user = getSessionUser(req);
   if (!user || !user.roles.includes(ADMIN_ROLE)) return null;

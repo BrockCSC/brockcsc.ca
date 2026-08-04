@@ -1,12 +1,7 @@
-// Komodo Action "brockcsc-preview-sweep". Source of truth is the copy
-// embedded in resources.toml's [[action]] file_contents - kept here purely
-// for human review/diffing and must be kept in sync by hand.
-//
-// Runs on a schedule (see resources.toml) and deletes brockcsc-pr-* preview
-// stacks whose source branch is gone or hasn't been pushed to in 3 days,
-// dropping the matching preview_* schema. Connects to Postgres directly
-// over wayfarer-net (Komodo Core shares that network) - no SSH, no docker
-// exec, since Core does not have docker.sock access.
+// Actual source of truth is the copy embedded in resources.toml's
+// [[action]] file_contents - keep both in sync by hand. Connects to
+// Postgres directly over wayfarer-net rather than SSH, since Komodo Core
+// has no docker.sock access to exec into the postgres container.
 
 import { Client } from "npm:pg@8";
 

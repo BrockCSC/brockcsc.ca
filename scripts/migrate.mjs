@@ -1,7 +1,3 @@
-// Plain Node script, run before the server starts (see package.json
-// "predev" and the Dockerfile CMD). Deliberately outside the Next.js app
-// bundle so pg's optional native bindings never get pulled into webpack's
-// dev/edge compilation graph.
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Pool } from "pg";
