@@ -52,6 +52,21 @@ jobs:
       name: ${{ needs.context.outputs.env_name }}
       url: ${{ needs.context.outputs.url }}
     steps:
+      - name: Apply komodo/resources.toml
+        env:
+          KOMODO_HOST: ${{ vars.KOMODO_HOST }}
+          KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
+          KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
+        run: |
+          jq -n '{type:"CreateResourceSync", params:{name:"brockcsc-website", config:{git_provider:"github.com", repo:"BrockCSC/website", branch:"main", resource_path:["komodo/resources.toml"]}}}' |
+            curl -s -X POST "$KOMODO_HOST/write" \
+              -H "Content-Type: application/json" -H "x-api-key: $KOMODO_API_KEY" -H "x-api-secret: $KOMODO_API_SECRET" \
+              -d @- > /dev/null
+
+          curl -sf -X POST "$KOMODO_HOST/execute" \
+            -H "Content-Type: application/json" -H "x-api-key: $KOMODO_API_KEY" -H "x-api-secret: $KOMODO_API_SECRET" \
+            -d '{"type":"RunSync","params":{"sync":"brockcsc-website"}}' > /dev/null
+
       - name: Sync GitHub secrets to Komodo Variables
         env:
           KOMODO_HOST: ${{ vars.KOMODO_HOST }}

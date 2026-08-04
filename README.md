@@ -52,15 +52,15 @@ The dev server runs at [http://localhost:3000](http://localhost:3000). Migration
 
 ## Deployment
 
-Every push runs `.github/workflows/ci.yml`'s checks, then waits for the matching [GitHub Environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)'s required reviewers to approve (`dev` for any branch, `uat` for `main`, `production` for version tags). On approval, the `deploy` job upserts the app secrets into Komodo as Variables (idempotent - a no-op once they already exist) and triggers a Komodo Action (`komodo/actions/deploy.ts`) that builds the image **on the VPS itself** and deploys it. GitHub Actions never builds or pushes a Docker image; the only long-lived GitHub secrets are `KOMODO_API_KEY`/`KOMODO_API_SECRET` plus the app secrets it forwards on to Komodo.
+Every push runs `.github/workflows/ci.yml`'s checks, then waits for the matching [GitHub Environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)'s required reviewers to approve (`dev` for any branch, `uat` for `main`, `production` for version tags). On approval, the `deploy` job applies `komodo/resources.toml` (creating the `ResourceSync` itself on first run), upserts the app secrets into Komodo as Variables, and triggers a Komodo Action (`komodo/actions/deploy.ts`) that builds the image **on the VPS itself** and deploys it. All three steps are idempotent - safe to run on every deploy. GitHub Actions never builds or pushes a Docker image; the only long-lived GitHub secrets are `KOMODO_API_KEY`/`KOMODO_API_SECRET` plus the app secrets it forwards on to Komodo.
 
-Komodo resources (`Build`, `Stack`s, `Action`s) are declared in `komodo/resources.toml` and kept in sync from this repo by a `ResourceSync`. `komodo/actions/*.ts` are the human-readable source for the two Actions — their actual (identical) contents are embedded in `resources.toml`'s `file_contents` fields, since Komodo can't include external files; keep both in sync by hand when editing.
+Komodo resources (`Build`, `Stack`s, `Action`s) are declared in `komodo/resources.toml`. `komodo/actions/*.ts` are the human-readable source for the two Actions — their actual (identical) contents are embedded in `resources.toml`'s `file_contents` fields, since Komodo can't include external files; keep both in sync by hand when editing.
 
 ### One-time setup
 
 In GitHub repo settings, add one secret beyond the existing `BROCKCSC_*`/`KOMODO_*` ones: `BROCKCSC_PREVIEW_SWEEP_TOKEN`, a fine-grained PAT scoped to just this repo with read-only Contents access (used by the preview-sweep schedule to list branches/commits - it runs independently of any GitHub Actions run, so it can't use the workflow's own ephemeral token).
 
-In the Komodo UI, create a `ResourceSync` pointed at this repo (`komodo/resources.toml`). No registry credential is needed — the Build and every Stack run on the same server (`wayfarerbx-vps`), so the built image never needs to leave that Docker daemon.
+Nothing else - no Komodo UI setup, no registry credential (the Build and every Stack run on the same server, `wayfarerbx-vps`, so the built image never needs to leave that Docker daemon).
 
 Deploys always go through `komodo/actions/deploy.ts` (dispatched by CI after review approval) — the Stack webhooks in `resources.toml` are deliberately `webhook_enabled = false`, since a raw git-push webhook would deploy before the GitHub review gate approves.
 
