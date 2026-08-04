@@ -53,25 +53,9 @@ jobs:
       url: ${{ needs.context.outputs.url }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Apply komodo/resources.toml
-        env:
-          KOMODO_HOST: ${{ vars.KOMODO_HOST }}
-          KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
-          KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
-        run: |
-          source .github/scripts/komodo.sh
-
-          # Creating an already-existing ResourceSync is expected to 4xx on
-          # every run after the first - log it but don't fail the step.
-          komodo /write "$(jq -n '{type:"CreateResourceSync", params:{name:"brockcsc-website", config:{git_provider:"github.com", repo:"BrockCSC/website", branch:"main", resource_path:["komodo/resources.toml"]}}}')" \
-            || echo "::warning::CreateResourceSync failed (likely already exists, see error above) - continuing"
-
-          # RunSync only *triggers* the sync - wait for it to actually finish
-          # applying resources.toml before anything downstream relies on the
-          # Build/Stacks/Action it declares existing.
-          sync_update="$(komodo /execute '{"type":"RunSync","params":{"sync":"brockcsc-website"}}')"
-          komodo_await "$sync_update" 24
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
       - name: Sync GitHub secrets to Komodo Variables
         env:
@@ -100,18 +84,34 @@ jobs:
           sync_var BROCKCSC_KEYCLOAK_CLIENT_SECRET "$VAL_BROCKCSC_KEYCLOAK_CLIENT_SECRET" true
           sync_var BROCKCSC_SESSION_JWT_SECRET "$VAL_BROCKCSC_SESSION_JWT_SECRET" true
 
-      - name: Trigger Komodo deploy
+      - id: deploy-context
+        run: node komodo/deploy-context.mjs
         env:
-          KOMODO_HOST: ${{ vars.KOMODO_HOST }}
-          KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
-          KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
-        run: |
-          source .github/scripts/komodo.sh
+          REF: ${{ github.ref }}
 
-          # This action builds the image on the VPS and runs docker compose -
-          # give it up to 15 minutes to actually finish before calling it done.
-          deploy_update="$(komodo /execute "$(jq -n \
-            --arg ref "${{ github.ref }}" \
-            --arg sha "${{ github.sha }}" \
-            '{type:"RunAction", params:{action:"brockcsc-deploy", arguments: ("REF=" + $ref + "\nSHA=" + $sha)}}')")"
-          komodo_await "$deploy_update" 180
+      - uses: BrockCSC/komodo-deploy/deploy@v1
+        with:
+          komodo-host: ${{ vars.KOMODO_HOST }}
+          komodo-api-key: ${{ secrets.KOMODO_API_KEY }}
+          komodo-api-secret: ${{ secrets.KOMODO_API_SECRET }}
+          build-name: brockcsc
+          server: wayfarerbx-vps
+          repo: BrockCSC/website
+          build-path: .
+          dockerfile-path: Dockerfile
+          image-name: brockcsc-ca
+          branch: ${{ steps.deploy-context.outputs.branch }}
+          stack-name: ${{ steps.deploy-context.outputs.stack-name }}
+          compose-file-paths: deploy/docker-compose.yml
+          environment: ${{ steps.deploy-context.outputs.environment }}
+          commit-sha: ${{ github.sha }}
+
+      - uses: BrockCSC/komodo-deploy/ensure-action@v1
+        with:
+          komodo-host: ${{ vars.KOMODO_HOST }}
+          komodo-api-key: ${{ secrets.KOMODO_API_KEY }}
+          komodo-api-secret: ${{ secrets.KOMODO_API_SECRET }}
+          action-name: brockcsc-preview-sweep
+          script-path: komodo/actions/preview-sweep.ts
+          schedule: "at 09:00 am"
+          schedule-enabled: true

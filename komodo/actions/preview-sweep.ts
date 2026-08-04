@@ -1,7 +1,5 @@
-// Actual source of truth is the copy embedded in resources.toml's
-// [[action]] file_contents - keep both in sync by hand. Connects to
-// Postgres directly over wayfarer-net rather than SSH, since Komodo Core
-// has no docker.sock access to exec into the postgres container.
+// Connects to Postgres directly over wayfarer-net rather than SSH, since
+// Komodo Core has no docker.sock access to exec into the postgres container.
 
 import { Client } from "npm:pg@8";
 
