@@ -26,60 +26,60 @@ A community of 900+ students who code, connect, and create together.
 
 <br />
 
-## What lives here
+## What's inside
 
-A single Next.js app that carries the club's public face and the tools the execs use to run it — wrapped in a bold, neubrutalist design language of flat colour, thick black outlines, and hard offset shadows.
+One Next.js app: the club's public site, plus the tools the execs use to keep it running.
 
 <table width="100%">
   <tr>
-    <td width="90" align="center" valign="top">🏠</td>
-    <td valign="top">
+    <td width="88" align="center" valign="middle"><img src="public/readme/icon-home.svg" alt="" width="64" height="64" /></td>
+    <td valign="middle">
       <strong>Home</strong><br />
-      A punchy hero intro, an avatar wall of the current exec team, and a live preview of the next two upcoming events — the club at a glance.
+      The landing page. A hero, the current execs, and whatever's coming up next.
     </td>
   </tr>
   <tr>
-    <td align="center" valign="top">📅</td>
-    <td valign="top">
+    <td align="center" valign="middle"><img src="public/readme/icon-events.svg" alt="" width="64" height="64" /></td>
+    <td valign="middle">
       <strong>Events</strong><br />
-      A real scheduling engine. One-off <em>and</em> recurring events (weekly, biweekly, and monthly with specific weekday rules) are computed live against a Toronto-timezone clock, sorted into ongoing, upcoming, and past — with past events neatly grouped by academic term.
+      Handles one-off events and recurring ones, weekly, biweekly or monthly. Everything's worked out against Toronto time and split into what's happening now, what's coming up, and what already happened.
     </td>
   </tr>
   <tr>
-    <td align="center" valign="top">🧑‍🤝‍🧑</td>
-    <td valign="top">
+    <td align="center" valign="middle"><img src="public/readme/icon-team.svg" alt="" width="64" height="64" /></td>
+    <td valign="middle">
       <strong>Team</strong><br />
-      The people behind the club. Current execs auto-sort by role priority (President → VP → Co-President → Treasurer → Executive), alongside an alumni wall celebrating past executives with their bios and socials.
+      The current execs, sorted by role. Past execs get their own wall too, with a short bio and their socials.
     </td>
   </tr>
   <tr>
-    <td align="center" valign="top">📚</td>
-    <td valign="top">
+    <td align="center" valign="middle"><img src="public/readme/icon-cs-guide.svg" alt="" width="64" height="64" /></td>
+    <td valign="middle">
       <strong>CS Guide</strong><br />
-      An open-source, student-written field guide to Brock Computer Science — course codes, credit types, program requirements, and campus resources — navigated by a scrollspy sidebar that tracks your place as you read.
+      A guide written by students, for students. Course codes, credit types, program requirements, that kind of thing.
     </td>
   </tr>
   <tr>
-    <td align="center" valign="top">🔗</td>
-    <td valign="top">
+    <td align="center" valign="middle"><img src="public/readme/icon-links.svg" alt="" width="64" height="64" /></td>
+    <td valign="middle">
       <strong>Links</strong><br />
-      A tidy quick-link hub pointing to Discord, Instagram, GitHub, LinkedIn, and ExperienceBU — everything the club is, one tap away.
+      Discord, Instagram, GitHub, LinkedIn, ExperienceBU, all in one place.
     </td>
   </tr>
   <tr>
-    <td align="center" valign="top">🛠️</td>
-    <td valign="top">
+    <td align="center" valign="middle"><img src="public/readme/icon-admin.svg" alt="" width="64" height="64" /></td>
+    <td valign="middle">
       <strong>Admin CMS</strong><br />
-      A Keycloak-gated dashboard where execs manage events and team members without ever touching the database directly.
+      Where execs add and edit events and team members. Locked behind Keycloak, no database access needed.
     </td>
   </tr>
 </table>
 
 <br />
 
-## Design language
+## The look
 
-Everything you see follows one idea: **neubrutalism**. Solid flat fills, thick black outlines, and hard drop shadows offset in brand red (`#9A4440`) or black — no gradients, no blur, no glow. Buttons and badges press down when you touch them, cards lift on hover, and a floating member badge bobs gently, so the whole site feels alive without ever getting fussy.
+The whole site leans neubrutalist: flat colours, thick black outlines, and hard shadows offset in brand red (`#9A4440`) or black. No gradients, no blur. Buttons press down when you click them, cards lift on hover, and the member badge bobs.
 
 <br />
 
