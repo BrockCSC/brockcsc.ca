@@ -1,16 +1,5 @@
 import jwt from "jsonwebtoken";
 
-const { KEYCLOAK_ISSUER, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET } =
-  process.env;
-
-for (const [name, value] of Object.entries({
-  KEYCLOAK_ISSUER,
-  KEYCLOAK_CLIENT_ID,
-  KEYCLOAK_CLIENT_SECRET,
-})) {
-  if (!value) throw new Error(`${name} env var is not set.`);
-}
-
 type KeycloakTokenPayload = {
   sub: string;
   email: string;
@@ -29,6 +18,17 @@ export const exchangeCredentials = async (
   username: string,
   password: string,
 ): Promise<KeycloakIdentity | null> => {
+  const { KEYCLOAK_ISSUER, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET } =
+    process.env;
+
+  for (const [name, value] of Object.entries({
+    KEYCLOAK_ISSUER,
+    KEYCLOAK_CLIENT_ID,
+    KEYCLOAK_CLIENT_SECRET,
+  })) {
+    if (!value) throw new Error(`${name} env var is not set.`);
+  }
+
   const tokenResponse = await fetch(
     `${KEYCLOAK_ISSUER}/protocol/openid-connect/token`,
     {
