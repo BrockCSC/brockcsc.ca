@@ -52,35 +52,26 @@ jobs:
       name: ${{ needs.context.outputs.env_name }}
       url: ${{ needs.context.outputs.url }}
     steps:
+      - uses: actions/checkout@v4
+
       - name: Apply komodo/resources.toml
         env:
           KOMODO_HOST: ${{ vars.KOMODO_HOST }}
           KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
           KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
         run: |
-          # Prints the response body and fails loudly on HTTP >= 400, instead
-          # of curl -sf's bare, contextless exit code.
-          komodo() {
-            local path="$1" body="$2" resp status
-            resp="$(mktemp)"
-            status=$(curl -s -o "$resp" -w '%{http_code}' -X POST "$KOMODO_HOST$path" \
-              -H "Content-Type: application/json" -H "x-api-key: $KOMODO_API_KEY" -H "x-api-secret: $KOMODO_API_SECRET" \
-              -d "$body")
-            if [ "$status" -ge 400 ]; then
-              echo "::error::POST $path -> HTTP $status: $(cat "$resp")"
-              rm -f "$resp"
-              return 1
-            fi
-            cat "$resp"
-            rm -f "$resp"
-          }
+          source .github/scripts/komodo.sh
 
           # Creating an already-existing ResourceSync is expected to 4xx on
           # every run after the first - log it but don't fail the step.
           komodo /write "$(jq -n '{type:"CreateResourceSync", params:{name:"brockcsc-website", config:{git_provider:"github.com", repo:"BrockCSC/website", branch:"main", resource_path:["komodo/resources.toml"]}}}')" \
             || echo "::warning::CreateResourceSync failed (likely already exists, see error above) - continuing"
 
-          komodo /execute '{"type":"RunSync","params":{"sync":"brockcsc-website"}}'
+          # RunSync only *triggers* the sync - wait for it to actually finish
+          # applying resources.toml before anything downstream relies on the
+          # Build/Stacks/Action it declares existing.
+          sync_update="$(komodo /execute '{"type":"RunSync","params":{"sync":"brockcsc-website"}}')"
+          komodo_await "$sync_update" 24
 
       - name: Sync GitHub secrets to Komodo Variables
         env:
@@ -93,20 +84,14 @@ jobs:
           VAL_BROCKCSC_KEYCLOAK_CLIENT_SECRET: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_SECRET }}
           VAL_BROCKCSC_SESSION_JWT_SECRET: ${{ secrets.BROCKCSC_SESSION_JWT_SECRET }}
         run: |
+          source .github/scripts/komodo.sh
+
           # Creating an already-existing Variable 4xxs on every run after the
           # first - expected, so this only warns rather than failing the step.
           sync_var() {
-            local name="$1" value="$2" is_secret="$3" resp status
-            resp="$(mktemp)"
-            status=$(jq -n --arg name "$name" --arg value "$value" --argjson is_secret "$is_secret" \
-              '{type:"CreateVariable", params:{name:$name, value:$value, is_secret:$is_secret}}' |
-              curl -s -o "$resp" -w '%{http_code}' -X POST "$KOMODO_HOST/write" \
-                -H "Content-Type: application/json" -H "x-api-key: $KOMODO_API_KEY" -H "x-api-secret: $KOMODO_API_SECRET" \
-                -d @-)
-            if [ "$status" -ge 400 ]; then
-              echo "::warning::CreateVariable $name -> HTTP $status: $(cat "$resp") (likely already exists) - continuing"
-            fi
-            rm -f "$resp"
+            komodo /write "$(jq -n --arg name "$1" --arg value "$2" --argjson is_secret "$3" \
+              '{type:"CreateVariable", params:{name:$name, value:$value, is_secret:$is_secret}}')" \
+              || echo "::warning::CreateVariable $1 failed (likely already exists, see error above) - continuing"
           }
 
           sync_var BROCKCSC_DB_PASSWORD "$VAL_BROCKCSC_DB_PASSWORD" true
@@ -121,19 +106,12 @@ jobs:
           KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
           KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
         run: |
-          resp="$(mktemp)"
-          status=$(curl -s -o "$resp" -w '%{http_code}' -X POST "$KOMODO_HOST/execute" \
-            -H "Content-Type: application/json" \
-            -H "x-api-key: $KOMODO_API_KEY" \
-            -H "x-api-secret: $KOMODO_API_SECRET" \
-            -d "$(jq -n \
-                  --arg ref "${{ github.ref }}" \
-                  --arg sha "${{ github.sha }}" \
-                  '{type:"RunAction", params:{action:"brockcsc-deploy", arguments: ("REF=" + $ref + "\nSHA=" + $sha)}}')")
-          if [ "$status" -ge 400 ]; then
-            echo "::error::RunAction brockcsc-deploy -> HTTP $status: $(cat "$resp")"
-            rm -f "$resp"
-            exit 1
-          fi
-          cat "$resp"
-          rm -f "$resp"
+          source .github/scripts/komodo.sh
+
+          # This action builds the image on the VPS and runs docker compose -
+          # give it up to 15 minutes to actually finish before calling it done.
+          deploy_update="$(komodo /execute "$(jq -n \
+            --arg ref "${{ github.ref }}" \
+            --arg sha "${{ github.sha }}" \
+            '{type:"RunAction", params:{action:"brockcsc-deploy", arguments: ("REF=" + $ref + "\nSHA=" + $sha)}}')")"
+          komodo_await "$deploy_update" 180
