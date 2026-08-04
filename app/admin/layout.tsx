@@ -58,7 +58,6 @@ export default function AdminLayout({
     return <LoginForm onSuccess={() => setAuthenticated(true)} />;
   }
 
-  // Admin layout with navigation tabs and content area
   return (
     <div className="pt-8">
       <div className="mx-auto w-full max-w-[1060px] px-5">

@@ -21,7 +21,7 @@ const Guide: React.FC = () => {
           <section id="introduction" className="mb-16">
             <h1 className="text-4xl font-bold mb-6">Brock CS Student Guide</h1>
 
-            <div className="border-l-4 border-[#9A4440] pl-6 text-black-600 text-lg">
+            <div className="border-l-4 border-[#9A4440] pl-6 text-neutral-600 text-lg">
               Hello there, We are thrilled to have you here! Whether you&apos;re
               new or returning, our mission is to empower students with the
               skills, knowledge, and connections necessary to excel in Computer
@@ -46,7 +46,7 @@ const Guide: React.FC = () => {
           <section id="registration" className="mb-12">
             <h1 className="text-4xl font-bold mb-6">Course Registration</h1>
 
-            <div className="border-l-4 border-[#9A4440] pl-6 text-black-600 text-lg">
+            <div className="border-l-4 border-[#9A4440] pl-6 text-neutral-600 text-lg">
               As a first-year student, one of your first tasks is to register
               for your courses. This section is here to guide you through that
               process.
@@ -73,7 +73,7 @@ const Guide: React.FC = () => {
               Course Codes
             </h2>
 
-            <div className="border-l-4 border-[#9A4440] pl-6 text-black-600 text-lg mb-8">
+            <div className="border-l-4 border-[#9A4440] pl-6 text-neutral-600 text-lg mb-8">
               In your course requirements, you will see a bunch of course codes
               and it is crucial to know how these courses are structured.
               <br />
@@ -125,7 +125,7 @@ const Guide: React.FC = () => {
                   Full-Credit Course
                 </h3>
 
-                <p className="text-black-600">
+                <p className="text-neutral-600">
                   Full-credit courses run through both Fall and Winter semesters
                   (D1 duration). Some intensive thesis or project courses are
                   weighted as 1.0 credits.
@@ -142,7 +142,7 @@ const Guide: React.FC = () => {
                   Half-Credit Course
                 </h3>
 
-                <p className="text-black-600">
+                <p className="text-neutral-600">
                   Most courses at Brock are 0.5 credits. These typically run for
                   one semester (12 weeks). You need 20.0 credits total to
                   graduate with an Honours degree.Q is the same thing, it is
@@ -160,7 +160,7 @@ const Guide: React.FC = () => {
                   Coop-Credit Course
                 </h3>
 
-                <p className="text-black-600">
+                <p className="text-neutral-600">
                   Only required for co-op, and the credit is only weighted for
                   OSAP but does not apply to your graduation requirement
                 </p>
@@ -175,7 +175,7 @@ const Guide: React.FC = () => {
                   No-Credit Course
                 </h3>
 
-                <p className="text-black-600">Only required for co-op</p>
+                <p className="text-neutral-600">Only required for co-op</p>
               </div>
             </div>
             <div className="mt-6 border border-yellow-400 bg-yellow-50 rounded-xl px-6 py-4 text-sm text-yellow-800">
@@ -189,7 +189,7 @@ const Guide: React.FC = () => {
               <span className="w-4 h-4 rounded-full border-2 border-[#9A4440]" />
               Course Durations
             </h2>
-            <div className="border-l-4 border-[#9A4440] pl-6 text-black-600 text-lg mb-8">
+            <div className="border-l-4 border-[#9A4440] pl-6 text-neutral-600 text-lg mb-8">
               Courses are offered during various times throughout the year and
               it is important to know which duration refers to which time
               period. <br></br>
@@ -204,7 +204,7 @@ const Guide: React.FC = () => {
               <span className="w-4 h-4 rounded-full border-2 border-[#9A4440]" />
               Sections
             </h2>
-            <div className="border-l-4 border-[#9A4440] pl-6 text-black-600 text-lg mb-8">
+            <div className="border-l-4 border-[#9A4440] pl-6 text-neutral-600 text-lg mb-8">
               Some courses are large and divided into sections for lectures,
               seminars, labs, or marking purposes. Sections might have different
               instructors but cover the same material. If you want to be in the
@@ -220,7 +220,7 @@ const Guide: React.FC = () => {
               <span className="w-4 h-4 rounded-full border-2 border-[#9A4440]" />
               Context Credits
             </h2>
-            <div className="border-l-4 border-[#9A4440] pl-6 text-black-600 text-lg mb-8">
+            <div className="border-l-4 border-[#9A4440] pl-6 text-neutral-600 text-lg mb-8">
               All students must include one credit (or two half-credits) from
               the list of Humanities, Social Sciences and Sciences Context
               Courses to fulfil their degree requirements.
@@ -313,7 +313,7 @@ const Guide: React.FC = () => {
               <span className="w-4 h-4 rounded-full border-2 border-[#9A4440]" />
               Minor in Applied Computing
             </h2>
-            <div className="border-l-4 border-[#9A4440] pl-6 text-black-600 text-lg mb-8">
+            <div className="border-l-4 border-[#9A4440] pl-6 text-neutral-600 text-lg mb-8">
               <div className="mt-6 border border-yellow-400 bg-yellow-50 rounded-xl px-6 py-4 text-sm text-yellow-800 mb-8">
                 ⚠ Note: This is the only minor that the CS Department offers.
               </div>
@@ -338,7 +338,7 @@ const Guide: React.FC = () => {
               Double Major
             </h2>
 
-            <div className="border-l-4 border-[#9A4440] pl-6 text-black-600 text-lg mb-8">
+            <div className="border-l-4 border-[#9A4440] pl-6 text-neutral-600 text-lg mb-8">
               Consider a double major program as this might allow you to have
               more direction in your non-core computer science courses, and it
               may serve the advantage of allowing you to bypass courses such as
@@ -371,7 +371,7 @@ const Guide: React.FC = () => {
               Courses
             </h2>
 
-            <div className="border-l-4 border-[#9A4440] pl-6 text-black-600 text-lg mb-8">
+            <div className="border-l-4 border-[#9A4440] pl-6 text-neutral-600 text-lg mb-8">
               This is a list of all required COSC courses, their pre-requeisites
               and the terms that they are generally offered in.<br></br>
               <br></br>
@@ -403,7 +403,7 @@ const Guide: React.FC = () => {
 
             <Table data={courses as TableData} mobileVariant="stack" />
 
-            <div className="border-l-4 border-[#9A4440] pl-6 text-black-600 text-lg mb-8 mt-8">
+            <div className="border-l-4 border-[#9A4440] pl-6 text-neutral-600 text-lg mb-8 mt-8">
               Here are some other helpful links, <br></br>
               <br></br>
               <ul>
@@ -442,7 +442,7 @@ const Guide: React.FC = () => {
               Resources
             </h2>
 
-            <div className="border-l-4 border-[#9A4440] pl-6 text-black-600 text-lg mb-8">
+            <div className="border-l-4 border-[#9A4440] pl-6 text-neutral-600 text-lg mb-8">
               <strong>Computer Science Club</strong>
               <br />
               <br />A great place to start and get a student&apos;s perspective
@@ -577,7 +577,7 @@ const Guide: React.FC = () => {
               Opportunities
             </h2>
 
-            <div className="border-l-4 border-[#9A4440] pl-6 text-black-600 text-lg mb-8">
+            <div className="border-l-4 border-[#9A4440] pl-6 text-neutral-600 text-lg mb-8">
               <strong>Experience BU</strong>
               <br />
               <br />

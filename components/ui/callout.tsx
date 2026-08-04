@@ -16,28 +16,28 @@ const CALLOUT_STYLES: Record<
     bg: "bg-yellow-100",
     border: "border-yellow-600",
     text: "text-yellow-800",
-    icon: warningIcon,
+    icon: () => <ExclamationIcon className="stroke-yellow-600" />,
     label: "Note",
   },
   error: {
     bg: "bg-red-100",
     border: "border-red-600",
     text: "text-red-800",
-    icon: errorIcon, // You can replace this with an error icon
+    icon: () => <CrossIcon className="stroke-red-600" />,
     label: "Error",
   },
   success: {
     bg: "bg-green-100",
     border: "border-green-600",
     text: "text-green-800",
-    icon: successIcon, // You can replace this with a success icon
+    icon: () => <CheckIcon className="stroke-green-600" />,
     label: "Success",
   },
   info: {
     bg: "bg-blue-100",
     border: "border-blue-600",
     text: "text-blue-800",
-    icon: infoIcon, // You can replace this with an info icon
+    icon: () => <ExclamationIcon className="stroke-blue-600" />,
     label: "Info",
   },
 };
@@ -66,17 +66,15 @@ export default function Callout({
   );
 }
 
-function warningIcon() {
-  const size = 25;
-
+function ExclamationIcon({ className }: { className: string }) {
   return (
     <svg
-      width={`${size}px`}
-      height={`${size}px`}
+      width="25px"
+      height="25px"
       viewBox="0 0 32 32"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
-      className="stroke-yellow-600"
+      className={className}
     >
       <path
         strokeLinecap="round"
@@ -89,39 +87,14 @@ function warningIcon() {
   );
 }
 
-function infoIcon() {
-  const size = 25;
-
+function CrossIcon({ className }: { className: string }) {
   return (
     <svg
-      width={`${size}px`}
-      height={`${size}px`}
-      viewBox="0 0 32 32"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      className="stroke-blue-600"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1"
-        d="M15.12 4.623a1 1 0 011.76 0l11.32 20.9A1 1 0 0127.321 27H4.679a1 1 0 01-.88-1.476l11.322-20.9zM16 18v-6"
-      />
-      <path d="M17.5 22.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-    </svg>
-  );
-}
-
-function errorIcon() {
-  const size = 25;
-
-  return (
-    <svg
-      width={`${size}px`}
-      height={`${size}px`}
+      width="25px"
+      height="25px"
       viewBox="0 0 512 512"
       xmlns="http://www.w3.org/2000/svg"
-      className="stroke-red-600"
+      className={className}
     >
       <g strokeWidth="20" strokeLinecap="round" strokeLinejoin="round">
         <g fill="none">
@@ -134,16 +107,14 @@ function errorIcon() {
   );
 }
 
-function successIcon() {
-  const size = 25;
-
+function CheckIcon({ className }: { className: string }) {
   return (
     <svg
-      width={`${size}px`}
-      height={`${size}px`}
+      width="25px"
+      height="25px"
       viewBox="0 0 512 512"
       xmlns="http://www.w3.org/2000/svg"
-      className="stroke-green-600"
+      className={className}
     >
       <g strokeWidth="20" strokeLinecap="round" strokeLinejoin="round">
         <g fill="none">

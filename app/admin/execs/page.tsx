@@ -9,46 +9,12 @@ import {
   fetchPreviousExecs,
   WithKey,
 } from "@/lib/api";
+import { sortCurrentExecsByRoleThenDatabaseOrder } from "@/lib/execs/order";
 import ExecModal from "./exec-modal";
 import { ConfirmationModal } from "@/components/ui/modal";
 import { AdminTable, ColumnDef } from "@/components/ui/admin-table";
 
 type TeamMember = WithKey<ExecRecord>;
-
-const UNKNOWN_ROLE_PRIORITY = Number.MAX_SAFE_INTEGER;
-
-const ROLE_PRIORITY: Record<string, number> = {
-  president: 1,
-  "vice president": 2,
-  "co-president": 3,
-  treasurer: 4,
-  executive: 5,
-};
-
-const getRolePriority = (title?: string): number => {
-  const normalizedTitle = title?.trim().toLowerCase() ?? "";
-  return ROLE_PRIORITY[normalizedTitle] ?? UNKNOWN_ROLE_PRIORITY;
-};
-
-const sortCurrentExecsByRoleThenDatabaseOrder = (
-  members: TeamMember[],
-): TeamMember[] => {
-  const orderByKey = new Map<string, number>();
-  members.forEach((member, index) => {
-    orderByKey.set(member.$key, index);
-  });
-
-  return [...members].sort((a, b) => {
-    const byRole = getRolePriority(a.title) - getRolePriority(b.title);
-    if (byRole !== 0) {
-      return byRole;
-    }
-
-    const aOrder = orderByKey.get(a.$key) ?? 0;
-    const bOrder = orderByKey.get(b.$key) ?? 0;
-    return aOrder - bOrder;
-  });
-};
 
 export default function ExecutivesManagementPage() {
   const [currentExecs, setCurrentExecs] = useState<TeamMember[]>([]);
@@ -58,7 +24,6 @@ export default function ExecutivesManagementPage() {
   const [showPast, setShowPast] = useState(false);
   const [openConfirmationModel, setOpenConfirmationModel] = useState(false);
 
-  // Define shared Actions column
   const actionsColumn: ColumnDef<(typeof currentExecs)[0]> = {
     header: "Actions",
     headerClassName: "text-center",
@@ -100,41 +65,31 @@ export default function ExecutivesManagementPage() {
     actionsColumn,
   ];
 
-  const loadTeam = async (active = true) => {
+  const loadTeam = async (isActive: () => boolean = () => true) => {
     try {
       const [current, previous] = await Promise.all([
         fetchCurrentExecs(),
         fetchPreviousExecs(),
       ]);
 
-      if (!active) {
+      if (!isActive()) {
         return;
       }
 
       setCurrentExecs(sortCurrentExecsByRoleThenDatabaseOrder(current));
       setPreviousExecs(previous);
     } catch {
-      if (!active) {
+      if (!isActive()) {
         return;
       }
-      console.log("Could not load team members right now.");
+      console.error("Could not load team members right now.");
     }
   };
 
   useEffect(() => {
     let active = true;
-    (async () => {
-      try {
-        const [current, previous] = await Promise.all([
-          fetchCurrentExecs(),
-          fetchPreviousExecs(),
-        ]);
-        if (!active) return;
-        setCurrentExecs(sortCurrentExecsByRoleThenDatabaseOrder(current));
-        setPreviousExecs(previous);
-      } catch {
-        if (active) console.log("Could not load team members right now.");
-      }
+    void (async () => {
+      await loadTeam(() => active);
     })();
     return () => {
       active = false;
@@ -197,7 +152,6 @@ export default function ExecutivesManagementPage() {
         </div>
       </div>
 
-      {/* Confirmation modal for deleting an executive member */}
       {openConfirmationModel && (
         <ConfirmationModal
           open={openConfirmationModel}
@@ -212,7 +166,6 @@ export default function ExecutivesManagementPage() {
         />
       )}
 
-      {/* Modal for adding/editing executives */}
       {showModal && (
         <ExecModal
           showModal={showModal}

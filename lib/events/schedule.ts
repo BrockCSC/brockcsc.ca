@@ -527,7 +527,7 @@ export const getEventTiming = (
   return {
     isRecurring: true,
     isOngoing,
-    nextStartTimestamp: isOngoing ? nextStart : nextStart,
+    nextStartTimestamp: nextStart,
   };
 };
 

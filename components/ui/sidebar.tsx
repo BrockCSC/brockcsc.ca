@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react"; // Optional: Install lucide-react for icons
+import { Menu, X } from "lucide-react";
 
 export default function Sidebar() {
   const [activeId, setActiveId] = useState("introduction");
@@ -30,10 +30,6 @@ export default function Sidebar() {
     return () => observer.disconnect();
   }, []);
 
-  const handleClick = (id: string) => {
-    setActiveId(id); // instant UI feedback
-  };
-
   const [isOpen, setIsOpen] = useState(false);
 
   const activeStyle = "bg-[#9A4440] text-white font-semibold";
@@ -43,8 +39,8 @@ export default function Sidebar() {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const handleNavClick = (id: string) => {
-    handleClick(id); // Your existing logic
-    setIsOpen(false); // Close menu after selection
+    setActiveId(id);
+    setIsOpen(false);
   };
 
   const navItems = [
@@ -71,7 +67,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* 1. Hamburger Button (Visible on mobile/tablet, hidden on desktop) */}
       <button
         onClick={toggleMenu}
         className={`lg:hidden fixed right-4 z-50 p-2 bg-white border-2 border-black shadow-[3px_3px_0_#000] rounded-xl ${
@@ -81,18 +76,12 @@ export default function Sidebar() {
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
-      {/* 2. Sidebar Container */}
       <aside
         className={`
-        /* Desktop Defaults */
         lg:block lg:sticky lg:top-24 lg:w-64 lg:h-fit shrink-0
-        
-        /* Mobile Overlay Logic */
         fixed inset-0 z-40 bg-white transition-transform duration-300 ease-in-out
-        ${isOpen ? "translate-x-0" : "translate-x-full"} 
+        ${isOpen ? "translate-x-0" : "translate-x-full"}
         lg:translate-x-0 lg:static lg:bg-transparent
-        
-        /* Mobile full screen vs Tablet partial */
         w-full md:w-80 ml-auto lg:ml-0
       `}
       >
@@ -112,8 +101,8 @@ export default function Sidebar() {
                     block rounded-xl border-2 border-black shadow-[3px_3px_0_#000] transition duration-200 text-center lg:text-left
                     ${
                       item.indent
-                        ? "ml-6 w-[calc(100%-1.5rem)] text-sm px-2 py-1 my-1" // Indented style (smaller)
-                        : "w-full px-4 py-3 lg:py-3 py-4 text-lg lg:text-base" // Standard style (larger)
+                        ? "ml-6 w-[calc(100%-1.5rem)] text-sm px-2 py-1 my-1"
+                        : "w-full px-4 py-3 lg:py-3 py-4 text-lg lg:text-base"
                     }
                     ${activeId === item.id ? activeStyle : defaultStyle}
                     `}
@@ -124,7 +113,6 @@ export default function Sidebar() {
         </nav>
       </aside>
 
-      {/* 3. Backdrop (Closes menu when clicking outside) */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"

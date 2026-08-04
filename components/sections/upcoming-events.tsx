@@ -106,8 +106,6 @@ export function UpcomingEventsSection() {
                       event.description ?? "More details coming soon..."
                     }
                     tags={tags}
-                    bgColor="bg-neutral-800"
-
                     imageUrl={event.image?.url ?? null}
                   />
                 </Link>

@@ -10,7 +10,6 @@ import { AboutUsSection } from "@/components/sections/about-us";
 export default function Home() {
   return (
     <div className="flex flex-col w-full font-sans bg-white overflow-x-hidden">
-      {/* 1. HERO SECTION */}
       <section className="relative w-full border-b-2 border-black">
         <div className="max-w-7xl mx-auto px-8 py-24 md:py-32 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="flex flex-col items-start gap-6 z-10">
@@ -58,10 +57,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 2. UPCOMING EVENTS SECTION */}
       <UpcomingEventsSection />
-
-      {/* 3. ABOUT US SECTION */}
       <AboutUsSection />
     </div>
   );

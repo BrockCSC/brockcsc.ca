@@ -91,7 +91,7 @@ export default function ExecModal({
           </label>
           <textarea
             className="w-full rounded border px-3 py-2"
-            placeholder="Describe the event goals and requirements..."
+            placeholder="A short bio for this executive..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />

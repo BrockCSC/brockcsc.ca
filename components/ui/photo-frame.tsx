@@ -20,7 +20,6 @@ export function PhotoFrame({
           <div className="w-full h-full rounded-[24px] overflow-hidden">
             {children ||
               (src ? (
-                // will need to replace with club photo we decide for the hero section
                 <img
                   src={src}
                   alt={alt}

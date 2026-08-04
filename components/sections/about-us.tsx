@@ -30,7 +30,6 @@ export function AboutUsSection() {
   return (
     <section id="about" className="w-full relative">
       <div className="max-w-7xl mx-auto px-8 py-24 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-        {/* Left Side: Text and Buttons */}
         <div className="flex flex-col gap-6">
           <h2 className="text-4xl font-bold tracking-tight">About Us</h2>
           <div className="w-16 h-1.5 bg-[#9A4440]" />
@@ -65,16 +64,13 @@ export function AboutUsSection() {
           </div>
         </div>
 
-        {/* Right Side: Member Wall Layout */}
         <div className="relative w-full max-w-[500px] mx-auto hidden md:flex items-center justify-center">
           <div className="flex flex-wrap justify-center gap-3 md:gap-4">
             {execs.map((exec) => (
-              // Wrapper added to handle the custom hover tooltip perfectly
               <div
                 key={exec.$key}
                 className="relative group flex justify-center"
               >
-                {/* The Avatar Circle */}
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-[3px] border-black bg-neutral-100 flex items-center justify-center overflow-hidden shadow-[3px_3px_0_0_#9A4440] transition-transform group-hover:-translate-y-1 duration-300">
                   {exec.image?.url ? (
                     <img
@@ -90,7 +86,6 @@ export function AboutUsSection() {
                   )}
                 </div>
 
-                {/* Custom hover (could remove later) to show exec name */}
                 {exec.name && (
                   <div className="absolute -bottom-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 whitespace-nowrap bg-white border-2 border-black text-black text-xs font-bold px-3 py-1.5 rounded-[8px] shadow-[2px_2px_0_0_#9A4440] pointer-events-none">
                     {exec.name}

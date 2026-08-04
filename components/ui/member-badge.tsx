@@ -1,4 +1,3 @@
-/* the  members bragging tag shown on homepage again and some other pages inn figma  */
 import { cn } from "@/lib/utils";
 
 interface MemberBadgeProps {

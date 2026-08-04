@@ -183,7 +183,6 @@ export default function DesignPage() {
                 <EventCard
                   title="Game Night"
                   description="Join us at the Computer Science Help Desk (MCJ328) every Friday from 6PM to 8PM for a time of fun. We have a variety of board and video games ranging from Catan and Go to Super Smash Bros."
-                  bgColor="bg-neutral-800"
                   imageUrl="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2000&auto=format&fit=crop"
                   tags={[
                     {

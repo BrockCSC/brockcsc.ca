@@ -5,7 +5,6 @@ import { ArrowUpRight } from "lucide-react";
 interface EventCardProps {
   title: string;
   description: string;
-  bgColor?: string;
   imageUrl?: string | null;
   tags: {
     label: string;
@@ -16,26 +15,22 @@ interface EventCardProps {
 export function EventCard({
   title,
   description,
-  bgColor = "bg-neutral-800",
   imageUrl,
   tags,
 }: EventCardProps) {
   return (
     <div className="w-full flex flex-col rounded-[24px] border-2 border-black bg-white p-2 shadow-[4px_4px_0_0_#9A4440] overflow-hidden h-full transform transition-transform hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#9A4440] duration-300 group/card">
-      {/* Image / Graphic Container */}
       <div
         className={`relative w-full aspect-[4/3] sm:aspect-video rounded-[16px] border-2 border-black overflow-hidden flex items-center justify-center bg-neutral-900`}
       >
         {imageUrl ? (
           <>
-            {/* 1. Blurred Background layer doing the "fill" */}
             <img
               src={imageUrl}
               alt=""
               aria-hidden="true"
               className="absolute inset-0 w-full h-full object-cover blur-xl opacity-40 scale-110 pointer-events-none transition-transform duration-500 group-hover/card:scale-125"
             />
-            {/* 2. The clear poster sitting on top */}
             <img
               src={imageUrl}
               alt={title}

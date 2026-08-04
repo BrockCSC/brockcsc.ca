@@ -24,7 +24,6 @@ export default function EventsManagementPage() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [nowTimestamp] = useState(() => Date.now());
 
-  // Define shared Actions column
   const actionsColumn: ColumnDef<(typeof upcomingEvents)[0]> = {
     header: "Actions",
     headerClassName: "text-center",
@@ -56,7 +55,6 @@ export default function EventsManagementPage() {
     ),
   };
 
-  // Define standard event columns (used for Upcoming & Past)
   const standardColumns: ColumnDef<(typeof upcomingEvents)[0]>[] = [
     {
       header: "Event Title",
@@ -73,7 +71,6 @@ export default function EventsManagementPage() {
     actionsColumn,
   ];
 
-  // Define Recurring specific columns
   const recurringColumns: ColumnDef<(typeof recurringEvents)[0]>[] = [
     {
       header: "Event Title",
@@ -107,15 +104,15 @@ export default function EventsManagementPage() {
     actionsColumn,
   ];
 
-  const load = async (active = true) => {
+  const load = async (isActive: () => boolean = () => true) => {
     try {
       const allEvents = await fetchAllEvents();
-      if (!active) {
+      if (!isActive()) {
         return;
       }
       setEvents(allEvents);
     } catch {
-      if (!active) {
+      if (!isActive()) {
         return;
       }
       console.error("Error loading events:");
@@ -124,13 +121,8 @@ export default function EventsManagementPage() {
 
   useEffect(() => {
     let active = true;
-    (async () => {
-      try {
-        const allEvents = await fetchAllEvents();
-        if (active) setEvents(allEvents);
-      } catch {
-        if (active) console.error("Error loading events:");
-      }
+    void (async () => {
+      await load(() => active);
     })();
     return () => {
       active = false;
@@ -184,7 +176,6 @@ export default function EventsManagementPage() {
         </Button>
       </div>
 
-      {/* Upcoming Events */}
       <div className="mb-10">
         <h2 className="text-xl font-bold mb-4">Upcoming Events</h2>
         <AdminTable
@@ -194,7 +185,6 @@ export default function EventsManagementPage() {
         />
       </div>
 
-      {/* Recurring Events */}
       <div className="mb-10">
         <h2 className="text-xl font-bold mb-4">Recurring Events</h2>
         <AdminTable
@@ -224,7 +214,6 @@ export default function EventsManagementPage() {
         )}
       </div>
 
-      {/* Confirmation modal for deleting an event */}
       {openConfirmationModel && (
         <ConfirmationModal
           open={openConfirmationModel}
@@ -239,7 +228,6 @@ export default function EventsManagementPage() {
         />
       )}
 
-      {/* Modal for adding/editing events */}
       {showModal && (
         <EventModal
           showModal={showModal}

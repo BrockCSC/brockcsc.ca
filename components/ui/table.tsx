@@ -53,9 +53,6 @@ const tableDefaults = {
   "--table-bg": "#ffffff",
 } as React.CSSProperties;
 
-// Customize the table by passing CSS variables via containerStyle or a wrapper class.
-// Example: <Table containerStyle={{ "--table-border": "#111", "--table-head-bg": "#f7f7f7" }} />
-
 const Table = React.forwardRef<HTMLTableElement, TableProps>(
   (
     {
