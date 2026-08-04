@@ -58,14 +58,29 @@ jobs:
           KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
           KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
         run: |
-          jq -n '{type:"CreateResourceSync", params:{name:"brockcsc-website", config:{git_provider:"github.com", repo:"BrockCSC/website", branch:"main", resource_path:["komodo/resources.toml"]}}}' |
-            curl -s -X POST "$KOMODO_HOST/write" \
+          # Prints the response body and fails loudly on HTTP >= 400, instead
+          # of curl -sf's bare, contextless exit code.
+          komodo() {
+            local path="$1" body="$2" resp status
+            resp="$(mktemp)"
+            status=$(curl -s -o "$resp" -w '%{http_code}' -X POST "$KOMODO_HOST$path" \
               -H "Content-Type: application/json" -H "x-api-key: $KOMODO_API_KEY" -H "x-api-secret: $KOMODO_API_SECRET" \
-              -d @- > /dev/null
+              -d "$body")
+            if [ "$status" -ge 400 ]; then
+              echo "::error::POST $path -> HTTP $status: $(cat "$resp")"
+              rm -f "$resp"
+              return 1
+            fi
+            cat "$resp"
+            rm -f "$resp"
+          }
 
-          curl -sf -X POST "$KOMODO_HOST/execute" \
-            -H "Content-Type: application/json" -H "x-api-key: $KOMODO_API_KEY" -H "x-api-secret: $KOMODO_API_SECRET" \
-            -d '{"type":"RunSync","params":{"sync":"brockcsc-website"}}' > /dev/null
+          # Creating an already-existing ResourceSync is expected to 4xx on
+          # every run after the first - log it but don't fail the step.
+          komodo /write "$(jq -n '{type:"CreateResourceSync", params:{name:"brockcsc-website", config:{git_provider:"github.com", repo:"BrockCSC/website", branch:"main", resource_path:["komodo/resources.toml"]}}}')" \
+            || echo "::warning::CreateResourceSync failed (likely already exists, see error above) - continuing"
+
+          komodo /execute '{"type":"RunSync","params":{"sync":"brockcsc-website"}}'
 
       - name: Sync GitHub secrets to Komodo Variables
         env:
@@ -78,14 +93,20 @@ jobs:
           VAL_BROCKCSC_KEYCLOAK_CLIENT_SECRET: ${{ secrets.BROCKCSC_KEYCLOAK_CLIENT_SECRET }}
           VAL_BROCKCSC_SESSION_JWT_SECRET: ${{ secrets.BROCKCSC_SESSION_JWT_SECRET }}
         run: |
-          # Fails harmlessly (409) once the variable already exists - to
-          # rotate a value, delete the Variable in Komodo first.
+          # Creating an already-existing Variable 4xxs on every run after the
+          # first - expected, so this only warns rather than failing the step.
           sync_var() {
-            jq -n --arg name "$1" --arg value "$2" --argjson is_secret "$3" \
+            local name="$1" value="$2" is_secret="$3" resp status
+            resp="$(mktemp)"
+            status=$(jq -n --arg name "$name" --arg value "$value" --argjson is_secret "$is_secret" \
               '{type:"CreateVariable", params:{name:$name, value:$value, is_secret:$is_secret}}' |
-              curl -s -X POST "$KOMODO_HOST/write" \
+              curl -s -o "$resp" -w '%{http_code}' -X POST "$KOMODO_HOST/write" \
                 -H "Content-Type: application/json" -H "x-api-key: $KOMODO_API_KEY" -H "x-api-secret: $KOMODO_API_SECRET" \
-                -d @- > /dev/null
+                -d @-)
+            if [ "$status" -ge 400 ]; then
+              echo "::warning::CreateVariable $name -> HTTP $status: $(cat "$resp") (likely already exists) - continuing"
+            fi
+            rm -f "$resp"
           }
 
           sync_var BROCKCSC_DB_PASSWORD "$VAL_BROCKCSC_DB_PASSWORD" true
@@ -100,11 +121,19 @@ jobs:
           KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
           KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
         run: |
-          curl -sf -X POST "$KOMODO_HOST/execute" \
+          resp="$(mktemp)"
+          status=$(curl -s -o "$resp" -w '%{http_code}' -X POST "$KOMODO_HOST/execute" \
             -H "Content-Type: application/json" \
             -H "x-api-key: $KOMODO_API_KEY" \
             -H "x-api-secret: $KOMODO_API_SECRET" \
             -d "$(jq -n \
                   --arg ref "${{ github.ref }}" \
                   --arg sha "${{ github.sha }}" \
-                  '{type:"RunAction", params:{action:"brockcsc-deploy", arguments: ("REF=" + $ref + "\nSHA=" + $sha)}}')"
+                  '{type:"RunAction", params:{action:"brockcsc-deploy", arguments: ("REF=" + $ref + "\nSHA=" + $sha)}}')")
+          if [ "$status" -ge 400 ]; then
+            echo "::error::RunAction brockcsc-deploy -> HTTP $status: $(cat "$resp")"
+            rm -f "$resp"
+            exit 1
+          fi
+          cat "$resp"
+          rm -f "$resp"
